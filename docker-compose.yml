@@ -1,0 +1,34 @@
+version: "3.9"
+
+# This is the two-zone isolation model from the architecture diagram in
+# the proposal. Right now only the protected_zone side (this app, the
+# scoring/accounts/dashboard/hints system) actually exists. The
+# vulnerable_zone target app gets added as its own service in Weeks 6 to
+# 7, once Sameer and Suyash start building real vulnerabilities, that's
+# why it's here as a commented placeholder rather than built now.
+
+services:
+  breachbox_app:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app  # live-reloads code changes during development
+    environment:
+      - SECRET_KEY=dev-only-change-me
+      - DATABASE_URL=sqlite:///breachbox.db
+    networks:
+      - protected_zone
+
+  # target_app:
+  #   build: ./target_app          # add this folder in Week 6 to 7
+  #   networks:
+  #     - vulnerable_zone
+  #   # deliberately NOT attached to protected_zone, this is the whole
+  #   # point of the isolation model, see Section 2.2 of the proposal
+
+networks:
+  protected_zone:
+    driver: bridge
+  vulnerable_zone:
+    driver: bridge

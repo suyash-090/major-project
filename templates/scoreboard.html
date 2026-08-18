@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Scoreboard, BreachBox{% endblock %}
+{% block content %}
+<h1>Scoreboard</h1>
+
+<table border="1" cellpadding="6">
+    <thead>
+        <tr><th>Rank</th><th>Student</th><th>Class</th><th>Points</th></tr>
+    </thead>
+    <tbody>
+        {% for row in scoreboard %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ row.display_name }}</td>
+            <td>{{ row.class_group }}</td>
+            <td>{{ row.total_score }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">No scores yet, nobody has solved a challenge.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<p><em>TODO, Week 11: render this as a Chart.js bar chart instead of a plain
+table, Chart.js is already loaded in base.html, ready to use.</em></p>
+{% endblock %}
