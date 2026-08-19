@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Dashboard, BreachBox{% endblock %}
+{% block content %}
+<h1>Welcome, {{ student.display_name }}</h1>
+
+<section>
+    <h2>Categories</h2>
+    <p><em>TODO, Week 11: filter list (All Challenges, Web, Injection, Access Control),
+    built once Challenge rows exist.</em></p>
+</section>
+
+<section>
+    <h2>Challenges</h2>
+    <p><em>TODO, Week 11: list of available Challenge subclasses, pulled via
+    discover_challenges(), shown with category, difficulty, and points.</em></p>
+</section>
+
+<section>
+    <h2>Recent submissions</h2>
+    <p><em>TODO, Week 11: feed of this student's recent Submission rows.</em></p>
+</section>
+{% endblock %}
