@@ -82,3 +82,49 @@ def discover_challenges(package_name: str = "breachbox.challenges"):
                 discovered.append(obj)
 
     return discovered
+
+
+def sync_challenges_to_db():
+    """
+    Ensures every discovered Challenge subclass has a matching row in the
+    challenge table, creating one if it doesn't exist yet, or updating
+    its category/difficulty/points if a subclass changed since last run.
+
+    This is what lets Sameer or Suyash add a new Challenge subclass and
+    have it just show up in the database and the dashboard, without
+    anyone manually inserting a row for it.
+
+    Deliberate design note for the team: flag validation itself happens
+    by calling check_solution() on the actual Python class instance, NOT
+    by comparing against the flag_hash column here. The column still
+    exists and gets set, mainly so the schema matches the ERD and so a
+    hash is on record, but the source of truth for "is this flag correct"
+    is each Challenge subclass's own check_solution(), since that's where
+    the real logic already lives for something like the SQLi reference.
+    If the team later prefers DB-driven validation instead, that's a
+    genuine design decision to make on purpose, not something to
+    assume from this helper.
+    """
+    from breachbox.extensions import db
+    from breachbox.models import Challenge
+
+    discovered = discover_challenges()
+
+    for cls in discovered:
+        row = Challenge.query.filter_by(name=cls.name).first()
+        if row is None:
+            row = Challenge(
+                name=cls.name,
+                category=cls.category,
+                difficulty=cls.difficulty,
+                points=cls.points,
+                flag_hash="managed_by_challenge_class",
+            )
+            db.session.add(row)
+        else:
+            row.category = cls.category
+            row.difficulty = cls.difficulty
+            row.points = cls.points
+
+    db.session.commit()
+    return discovered

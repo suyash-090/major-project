@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Portal Login</title>
+</head>
+<body>
+    <h1>Staff Portal</h1>
+    <!-- TODO (Sameer): once the POST /login handler exists, point this
+         form at it. Left without a method/action wired up for now so
+         this page doesn't silently fail against a route that isn't
+         built yet. -->
+    <form method="POST" action="/login">
+        <label>Username<br><input type="text" name="username"></label><br>
+        <label>Password<br><input type="password" name="password"></label><br>
+        <button type="submit">Log in</button>
+    </form>
+</body>
+</html>
