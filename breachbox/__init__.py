@@ -29,11 +29,13 @@ def create_app(config_class=Config):
     from breachbox.dashboard import dashboard_bp
     from breachbox.scoreboard import scoreboard_bp
     from breachbox.hints import hints_bp
+    from breachbox.submissions import submissions_bp
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(dashboard_bp, url_prefix="/dashboard")
     app.register_blueprint(scoreboard_bp, url_prefix="/scoreboard")
     app.register_blueprint(hints_bp, url_prefix="/hints")
+    app.register_blueprint(submissions_bp, url_prefix="/api")
 
     @app.route("/")
     def index():
@@ -41,21 +43,21 @@ def create_app(config_class=Config):
 
     with app.app_context():
         db.create_all()
-        _print_discovered_challenges()
+        _sync_and_print_challenges()
 
     return app
 
 
-def _print_discovered_challenges():
+def _sync_and_print_challenges():
     """
-    Runs once at startup so the team can see, in the terminal, that the
-    challenge loader actually found something. This is your confirmation
-    that discover_challenges() works before anyone builds a real
-    vulnerability on top of it.
+    Runs once at startup. Syncs discovered Challenge subclasses into the
+    database, then prints what it found so the team can see, in the
+    terminal, that discovery and syncing actually worked, before anyone
+    builds a real vulnerability on top of it.
     """
-    from breachbox.challenges.base import discover_challenges
+    from breachbox.challenges.base import sync_challenges_to_db
 
-    found = discover_challenges()
-    print(f"[BreachBox] Discovered {len(found)} challenge subclass(es):")
+    found = sync_challenges_to_db()
+    print(f"[BreachBox] Discovered and synced {len(found)} challenge subclass(es):")
     for cls in found:
         print(f"  - {cls.name} ({cls.category}, {cls.difficulty}, {cls.points} pts)")

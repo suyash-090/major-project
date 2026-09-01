@@ -8,6 +8,9 @@ env/
 # Never commit the actual database, everyone should be running against
 # their own local copy while developing.
 instance/
+target_app/instance/
+target_app/target_app.db
+breachbox.db
 
 # Environment variables, secrets live here locally, never in git.
 .env
