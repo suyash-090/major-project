@@ -79,6 +79,23 @@ def submit():
 
     is_correct = challenge_class().check_solution(submitted_flag)
 
+    if is_correct:
+        # Review-note fix: don't award points twice for the same
+        # challenge. This is the app-level half of the "already solved"
+        # check, backed by a DB-level partial unique index on Submission
+        # in models.py so a bug here can't double-award even so.
+        already_solved = Submission.query.filter_by(
+            student_id=current_user.student_id,
+            challenge_id=challenge_row.challenge_id,
+            is_correct=True,
+        ).first()
+        if already_solved:
+            return jsonify({
+                "error": "already solved, this challenge won't award points again",
+                "is_correct": True,
+                "recorded": False,
+            }), 400
+
     # The write-up requirement from the proposal: a correct submission
     # without a write-up is rejected before anything gets recorded as
     # correct, rather than silently accepting it and hoping someone
