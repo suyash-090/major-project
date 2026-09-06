@@ -109,7 +109,7 @@ def login_submit():
         return (
             f"Welcome, {result.username}! "
             f"Flag: {FLAG} "
-            "(submit this flag at breachbox_app's /api/submit)"
+            "(submit this flag at flag_api's /api/submit, port 5002)"
         )
 
     return render_template("login.html", error="Invalid username or password"), 401

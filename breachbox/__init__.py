@@ -1,41 +1,33 @@
-import os
 from flask import Flask
 
 from config import Config
-from breachbox.extensions import db, login_manager
-from breachbox.models import Student
+from breachbox.extensions import db, init_login_manager
 
 
 def create_app(config_class=Config):
-    app = Flask(__name__, instance_relative_config=True, template_folder="../templates")
+    """
+    Builds breachbox_app: accounts, dashboard, scoreboard, hints. This is
+    the protected_zone service. It deliberately does NOT register the
+    submissions blueprint, that lives only in flag_api now (see
+    flag_api/app.py), since exposing flag submission from this app would
+    put the whole app back on a network reachable from the vulnerable
+    zone, which is exactly the isolation gap this refactor fixes.
+    """
+    app = Flask(__name__, template_folder="../templates")
     app.config.from_object(config_class)
 
-    # Flask's instance folder holds things that shouldn't be in version
-    # control, our SQLite file lives here. Create it if it doesn't exist,
-    # since a fresh clone of the repo won't have it yet.
-    os.makedirs(app.instance_path, exist_ok=True)
-
     db.init_app(app)
-    login_manager.init_app(app)
+    init_login_manager(app)
 
-    @login_manager.user_loader
-    def load_user(student_id):
-        return db.session.get(Student, int(student_id))
-
-    # Blueprints are registered here, not imported at the top of the file,
-    # because each blueprint module imports `db` from extensions.py, and
-    # importing them before db.init_app(app) has run causes issues.
     from breachbox.auth import auth_bp
     from breachbox.dashboard import dashboard_bp
     from breachbox.scoreboard import scoreboard_bp
     from breachbox.hints import hints_bp
-    from breachbox.submissions import submissions_bp
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(dashboard_bp, url_prefix="/dashboard")
     app.register_blueprint(scoreboard_bp, url_prefix="/scoreboard")
     app.register_blueprint(hints_bp, url_prefix="/hints")
-    app.register_blueprint(submissions_bp, url_prefix="/api")
 
     @app.route("/")
     def index():
@@ -49,12 +41,6 @@ def create_app(config_class=Config):
 
 
 def _sync_and_print_challenges():
-    """
-    Runs once at startup. Syncs discovered Challenge subclasses into the
-    database, then prints what it found so the team can see, in the
-    terminal, that discovery and syncing actually worked, before anyone
-    builds a real vulnerability on top of it.
-    """
     from breachbox.challenges.base import sync_challenges_to_db
 
     found = sync_challenges_to_db()

@@ -1,16 +1,25 @@
 version: "3.9"
 
-# This is the two-zone isolation model from the architecture diagram in
-# the proposal. breachbox_app (accounts, scoring, dashboard, hints) sits
-# in protected_zone. target_app (the deliberately vulnerable staff portal)
-# sits in vulnerable_zone. They do NOT share a network, and they do NOT
-# share a database, that separation is the entire point.
+# Three networks, not two. This directly responds to Sameer's isolation
+# issue: the original two-zone setup left breachbox_app and target_app
+# sharing nothing at all, which is stricter than the proposal describes
+# and leaves no path for the "narrow, documented flag-submission
+# endpoint" the architecture is supposed to have.
 #
-# The only legitimate crossing point between zones is a human: a student
-# exploits target_app, gets a flag string, then manually submits that
-# string to breachbox_app's /api/submit. There is no direct network path
-# from one container to the other, which is exactly what Week 8's
-# isolation penetration test needs to confirm.
+#   protected_zone   breachbox_app only (accounts, dashboard, hints)
+#   vulnerable_zone  target_app only (the deliberately vulnerable app)
+#   submission_zone  target_app AND flag_api, nothing else
+#
+# flag_api is a small, separate service exposing only the flag
+# submission and challenge-listing routes. It is the ONLY thing on
+# submission_zone that target_app can reach. breachbox_app never joins
+# submission_zone, so even a fully compromised target_app has no
+# network path to accounts, the dashboard, or hints, only to this one
+# narrow API.
+#
+# breachbox_app and flag_api share the same SQLite database via a
+# Docker VOLUME (breachbox_data), not via a shared network. Volumes and
+# networks are independent mechanisms in Docker.
 
 services:
   breachbox_app:
@@ -18,31 +27,57 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - .:/app  # live-reloads code changes during development
+      - .:/app
+      - breachbox_data:/app/instance
     environment:
       - SECRET_KEY=dev-only-change-me
-      - DATABASE_URL=sqlite:///breachbox.db
     networks:
       - protected_zone
+
+  flag_api:
+    build:
+      context: .
+      dockerfile: flag_api/Dockerfile
+    ports:
+      - "5002:5002"
+    volumes:
+      - .:/app
+      - breachbox_data:/app/instance
+    environment:
+      - SECRET_KEY=dev-only-change-me
+    networks:
+      - submission_zone
+    depends_on:
+      - breachbox_app  # controls container start order only, not
+                        # readiness, breachbox_app owns schema creation
 
   target_app:
     build: ./target_app
     ports:
-      - "5001:5001"  # exposed to the host for convenience during
-                      # development only, this port mapping does not
-                      # create a path to breachbox_app, only to your
-                      # own browser. Consider removing it before the
-                      # real Week 8 test, so the only way in is
-                      # genuinely as an attacker would find it.
+      - "5001:5001"  # exposed to the host for the student's own
+                      # browser only, this does not create a path to
+                      # any other container. Consider removing this
+                      # mapping before the real isolation test, so the
+                      # only way in is genuinely as an attacker would
+                      # find it.
     volumes:
       - ./target_app:/app
     networks:
       - vulnerable_zone
-    # deliberately NOT also listed under protected_zone, that omission
-    # is what isolation actually means here, not just a label
+      - submission_zone   # the one deliberate crossing: reach flag_api,
+                           # and nothing else
 
 networks:
   protected_zone:
     driver: bridge
   vulnerable_zone:
     driver: bridge
+    # TODO, hardening pass: add `internal: true` here once isolation
+    # test findings are in. That fully removes this network's outbound
+    # internet access via NAT, stopping a compromised container from
+    # reaching out externally.
+  submission_zone:
+    driver: bridge
+
+volumes:
+  breachbox_data:
