@@ -11,22 +11,24 @@ WHAT'S BUILT HERE (skeleton, Week 6-7 infra):
   - A tiny "staff_users" table with a couple of dummy accounts, so
     there's something real to query against once the vulnerable route
     exists
-  - A login form template, GET only right now
+  - A login form template
 
-WHAT'S NOT BUILT HERE, ON PURPOSE (Sameer's Week 6-7 milestone):
+WHAT'S NOW BUILT (Sameer's Week 6-7 milestone, done):
   - The actual POST /login handler
   - The deliberately unsafe SQL query
   - Wiring the flag string into a successful bypass response
 
-Sameer, your own reference at breachbox/challenges/_reference_sqli_login.py
-already sketches exactly this route in its commented worked example.
-Bring that logic in here, into a real POST handler, using the
-staff_users table below as the thing being queried.
+Built following the worked example in
+breachbox/challenges/_reference_sqli_login.py, adapted to query the
+real staff_users table below instead of a hypothetical `users` table.
+The matching Challenge subclass that checks this same flag lives at
+breachbox/challenges/sqli_login.py.
 """
 
 import os
 from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 
 app = Flask(__name__)
 
@@ -43,6 +45,14 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
+
+# The flag a student gets on a successful SQLi bypass. Plaintext here on
+# purpose, this app has nothing worth protecting by design, see the
+# module docstring above. The matching SHA-256 hash lives on the
+# Challenge subclass in breachbox/challenges/sqli_login.py, which is
+# what breachbox_app's /api/submit actually checks a submission
+# against, not anything in this file.
+FLAG = "flag{sql1_st4ff_p0rt4l_byp4ss_2026}"
 
 
 class StaffUser(db.Model):
@@ -77,13 +87,32 @@ def login_form():
     return render_template("login.html")
 
 
-# TODO (Sameer, Week 6-7): add the POST handler for /login here.
-# Use a raw, string-formatted SQL query against StaffUser on purpose,
-# rather than SQLAlchemy's normal filter_by(), so it's exploitable via
-# something like  admin' OR '1'='1  in the username field. Your
-# reference file already sketches this shape, bring the real version in
-# here. On a successful bypass, return the flag text so a student can
-# copy it into the Flag Submission API at /api/submit on breachbox_app.
+@app.route("/login", methods=["POST"])
+def login_submit():
+    """
+    DELIBERATE VULNERABILITY: raw, string-formatted SQL against
+    StaffUser, on purpose, rather than SQLAlchemy's normal filter_by().
+    Exploitable via something like  admin' OR '1'='1  in the username
+    field, which collapses the WHERE clause to always-true regardless
+    of the password supplied.
+    """
+    username = request.form.get("username", "")
+    password = request.form.get("password", "")
+
+    query = (
+        f"SELECT * FROM staff_users WHERE username = '{username}' "
+        f"AND password = '{password}'"
+    )
+    result = db.session.execute(text(query)).fetchone()
+
+    if result:
+        return (
+            f"Welcome, {result.username}! "
+            f"Flag: {FLAG} "
+            "(submit this flag at breachbox_app's /api/submit)"
+        )
+
+    return render_template("login.html", error="Invalid username or password"), 401
 
 
 with app.app_context():

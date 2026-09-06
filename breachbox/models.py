@@ -94,8 +94,26 @@ class Submission(db.Model):
     dashboard's recent submissions feed. writeup_text is only required by
     the application layer when is_correct is True, that check belongs in
     the flag-submission route, not here in the model.
+
+    __table_args__ adds a DB-level backstop for the "already solved" check
+    the flag-submission route makes at the app layer (see
+    breachbox/submissions/routes.py): at most one is_correct=True
+    Submission can ever exist per (student_id, challenge_id), so a bug in
+    the route logic can't award the same student points twice for the
+    same challenge. This is a partial unique index (SQLite-specific,
+    matching this project's DATABASE_URL), not a table-wide constraint,
+    since multiple incorrect attempts for the same pair are expected and
+    fine.
     """
     __tablename__ = "submission"
+    __table_args__ = (
+        db.Index(
+            "uq_submission_student_challenge_correct",
+            "student_id", "challenge_id",
+            unique=True,
+            sqlite_where=db.text("is_correct = 1"),
+        ),
+    )
 
     submission_id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey("student.student_id"),

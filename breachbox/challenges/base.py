@@ -68,6 +68,22 @@ def discover_challenges(package_name: str = "breachbox.challenges"):
     (excluding Challenge itself) and returns them as a list. This is what
     lets new vulnerabilities be "discovered" automatically rather than
     manually registered somewhere.
+
+    Review-note fixes (see issue tracking discovery + DB schema review):
+      - Underscore-prefixed modules (_example_challenge.py,
+        _reference_sqli_login.py, etc.) are skipped. Those are explicitly
+        marked as placeholders/references, not real challenges, and
+        without this skip they'd get auto-synced into the DB as live
+        challenges the moment they're merged.
+      - A broken challenge file (import error or bad metadata) is caught
+        per-module and logged, rather than killing app startup for
+        everyone. With three of us adding challenge files concurrently,
+        one bad file shouldn't take the whole app down.
+      - Only classes actually *defined* in a given module are counted
+        (obj.__module__ == module.__name__), not ones merely imported
+        into its namespace (e.g. `from breachbox.challenges.other import
+        SomeChallenge` for reuse), which would otherwise get discovered,
+        and synced to the DB, twice.
     """
     discovered = []
     package = importlib.import_module(package_name)
@@ -75,11 +91,28 @@ def discover_challenges(package_name: str = "breachbox.challenges"):
     for _, module_name, _ in pkgutil.iter_modules(package.__path__):
         if module_name in ("base",):
             continue  # skip this file itself
-        module = importlib.import_module(f"{package_name}.{module_name}")
+        if module_name.startswith("_"):
+            continue  # skip placeholder/reference-only modules
+
+        try:
+            module = importlib.import_module(f"{package_name}.{module_name}")
+        except Exception as exc:
+            print(f"[discover_challenges] failed to import {module_name}: {exc}")
+            continue
+
         for _, obj in inspect.getmembers(module, inspect.isclass):
-            if issubclass(obj, Challenge) and obj is not Challenge:
+            if not (issubclass(obj, Challenge) and obj is not Challenge):
+                continue
+            if obj.__module__ != module.__name__:
+                continue  # imported into this namespace, not defined here
+
+            try:
                 obj.validate_metadata()
-                discovered.append(obj)
+            except Exception as exc:
+                print(f"[discover_challenges] {obj.__name__} failed validation: {exc}")
+                continue
+
+            discovered.append(obj)
 
     return discovered
 
