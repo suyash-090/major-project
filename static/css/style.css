@@ -1,42 +1,180 @@
+/* BreachBox, protected zone (breachbox_app).
+   Visual language is a terminal/console feel throughout, this is
+   security tooling, students spend their time here reading challenge
+   names, points, and flags, content that already looks like console
+   output. Monospace carries structure and data, the system sans face
+   carries prose. Blue signals "protected zone"; target_app's stylesheet
+   uses a warm amber palette instead, so crossing between the two apps
+   is visually obvious, not just something written in the README. */
+
+:root {
+  --bg: #0d1117;
+  --panel: #161b22;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text-muted: #8b949e;
+  --accent: #3fb6f0;
+  --accent-dim: #1f4a5c;
+  --points: #4fbf7f;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --font-sans: -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
 body {
-    font-family: -apple-system, Segoe UI, Roboto, sans-serif;
-    margin: 0;
-    color: #1a1a1a;
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  line-height: 1.5;
+}
+
+a { color: var(--accent); }
+a:hover { color: #6cc9f2; }
+a:focus-visible, button:focus-visible, input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .navbar {
-    background: #1F3864;
-    color: white;
-    padding: 12px 20px;
-    display: flex;
-    gap: 16px;
-    align-items: center;
-}
-
-.navbar a {
-    color: #CADCFC;
-    text-decoration: none;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  padding: 14px 24px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  flex-wrap: wrap;
 }
 
 .navbar .brand {
-    font-weight: bold;
-    margin-right: auto;
+  color: var(--accent);
+  margin-right: auto;
+  white-space: nowrap;
 }
 
+.navbar .brand::after {
+  content: "_";
+  animation: blink 1.1s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+.navbar a { text-decoration: none; }
+.navbar a:hover { text-decoration: underline; }
+.navbar span { color: var(--text-muted); }
+
 main {
-    padding: 24px;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+h1 {
+  font-family: var(--font-mono);
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+h2 {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 32px;
 }
 
 .flashes {
-    background: #fff3cd;
-    padding: 10px 20px;
-    margin: 0;
+  list-style: none;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  color: var(--text);
+  padding: 10px 16px;
+  margin: 0 0 20px;
+  border-radius: 3px;
+  font-size: 0.92rem;
 }
+
+section {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  background: var(--panel);
+}
+
+section p em {
+  color: var(--text-muted);
+  font-style: normal;
+  font-size: 0.9rem;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 340px;
+}
+
+label {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+input[type="text"], input[type="password"] {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 8px 10px;
+}
+
+button {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 3px;
+  padding: 9px 16px;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+button:hover { background: #6cc9f2; }
 
 table {
-    border-collapse: collapse;
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.92rem;
 }
 
-/* This is a placeholder stylesheet. Real visual design is not part of
-   the Week 5 skeleton, style this properly once the dashboard's actual
-   layout is being built in Week 11. */
+th, td {
+  border-bottom: 1px solid var(--border);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+th {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+td:last-child, th:last-child {
+  font-family: var(--font-mono);
+  color: var(--points);
+  text-align: right;
+}

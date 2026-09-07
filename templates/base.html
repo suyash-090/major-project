@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}BreachBox{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <nav class="navbar">
-        <span class="brand">BreachBox</span>
+        <span class="brand">breachbox@protected-zone:~$</span>
         {% if current_user.is_authenticated %}
             <span>Logged in: {{ current_user.display_name }}</span>
             <a href="{{ url_for('dashboard.home') }}">Dashboard</a>
