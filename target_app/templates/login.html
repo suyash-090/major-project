@@ -1,18 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Staff Portal Login</title>
-</head>
-<body>
-    <h1>Staff Portal</h1>
-    {% if error %}
-    <p style="color: red;">{{ error }}</p>
-    {% endif %}
-    <form method="POST" action="/login">
-        <label>Username<br><input type="text" name="username"></label><br>
-        <label>Password<br><input type="password" name="password"></label><br>
-        <button type="submit">Log in</button>
-    </form>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Staff Portal Login{% endblock %}
+{% block content %}
+<h1>Staff Portal</h1>
+{% if error %}
+<p class="error">{{ error }}</p>
+{% endif %}
+<form method="POST" action="/login">
+    <label>Username<input type="text" name="username"></label>
+    <label>Password<input type="password" name="password"></label>
+    <button type="submit">Log in</button>
+</form>
+{% endblock %}

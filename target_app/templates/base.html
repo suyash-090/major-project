@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Target App{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <span class="brand">guest@target-app:vulnerable-zone:~$</span>
+    </nav>
+    <main>
+        <p class="warning">This is a deliberately vulnerable practice app. Everything here is fake staff data, with no connection to breachbox_app's real student database.</p>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
