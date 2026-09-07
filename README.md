@@ -75,8 +75,13 @@ only intended crossing point is a human: solve the challenge in
 a real vulnerability (`sqli_login.py`) is underway; it was only ever
 there to prove the loader worked before anything real existed.
 
-**Still open (deliberately, for the Week 7 network-isolation review):**
-the two-zone Docker network topology (`protected_zone` /
-`vulnerable_zone`) is unchanged in this round, see the open network
-isolation issue, that's the next thing to work through before the
-Week 8 isolation pen-test.
+**Week 7 network segmentation, decided:** `protected_zone` and
+`vulnerable_zone` stay fully separate, no shared network between them
+(see #3). The crossing between zones is the manual flag copy-paste
+flow described above, not an automated submission endpoint, this is a
+deliberate change from Section 2.2 of the original proposal, which
+described an automated path. `docker-compose.yml` already implements
+this as-is, no changes were needed. Two related items stay on the
+Week 12 hardening pass: locking down `vulnerable_zone`'s outbound
+internet access (`internal: true`), and double-checking `target_app`'s
+published port only exposes `target_app` itself.
