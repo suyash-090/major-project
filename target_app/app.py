@@ -6,23 +6,17 @@ That separation is deliberate, and is the entire point of the isolation
 model in Section 2.2 of the proposal: this app should have nothing worth
 protecting inside it, so a full compromise of it costs nothing.
 
-WHAT'S BUILT HERE (skeleton, Week 6-7 infra):
-  - A minimal Flask app that boots on its own, in its own container
-  - A tiny "staff_users" table with a couple of dummy accounts, so
-    there's something real to query against once the vulnerable route
-    exists
-  - A login form template
+WHAT'S BUILT HERE:
+  - A tiny "staff_users" table with a couple of dummy accounts
+  - A login form, POST-handled, deliberately vulnerable to SQL injection
+    (Vulnerability Set 1, "Staff Portal Login Bypass")
+  - A staff feedback board, deliberately vulnerable to reflected XSS
+    (Vulnerability Set 1, "Staff Feedback Reflected XSS")
 
-WHAT'S NOW BUILT (Sameer's Week 6-7 milestone, done):
-  - The actual POST /login handler
-  - The deliberately unsafe SQL query
-  - Wiring the flag string into a successful bypass response
-
-Built following the worked example in
-breachbox/challenges/_reference_sqli_login.py, adapted to query the
-real staff_users table below instead of a hypothetical `users` table.
-The matching Challenge subclass that checks this same flag lives at
-breachbox/challenges/sqli_login.py.
+Both vulnerabilities live in this one small app on purpose, matching the
+"target app" role described in the proposal: a single vulnerable-zone
+service with more than one deliberate flaw, rather than a service per
+vulnerability.
 """
 
 import os
@@ -46,13 +40,14 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
-# The flag a student gets on a successful SQLi bypass. Plaintext here on
+# Flags this app can hand out on a successful bypass. Plaintext here on
 # purpose, this app has nothing worth protecting by design, see the
-# module docstring above. The matching SHA-256 hash lives on the
-# Challenge subclass in breachbox/challenges/sqli_login.py, which is
-# what breachbox_app's /api/submit actually checks a submission
-# against, not anything in this file.
-FLAG = "flag{sql1_st4ff_p0rt4l_byp4ss_2026}"
+# module docstring above. The matching SHA-256 hashes live on the two
+# Challenge subclasses in breachbox/challenges/, which is what
+# breachbox_app's /api/submit actually checks a submission against, not
+# anything in this file.
+SQLI_FLAG = "flag{sql1_st4ff_p0rt4l_byp4ss_2026}"
+XSS_FLAG = "flag{r3fl3ct3d_xss_st4ff_f33db4ck_2026}"
 
 
 class StaffUser(db.Model):
@@ -108,11 +103,46 @@ def login_submit():
     if result:
         return (
             f"Welcome, {result.username}! "
-            f"Flag: {FLAG} "
+            f"Flag: {SQLI_FLAG} "
             "(submit this flag at breachbox_app's /api/submit)"
         )
 
     return render_template("login.html", error="Invalid username or password"), 401
+
+
+@app.route("/feedback", methods=["GET"])
+def feedback():
+    """
+    DELIBERATE VULNERABILITY: reflected XSS. The `message` query
+    parameter is passed straight into the template and rendered with
+    Jinja2's `|safe` filter, which turns off Jinja's normal
+    auto-escaping. Anything the visitor puts in `message` becomes raw
+    HTML in the response, including <script> tags, which the browser
+    genuinely executes as part of the page, since this is a full
+    server-rendered response, not something injected into an
+    already-loaded page via JS. Try it directly in a browser, e.g.
+      /feedback?message=<script>alert(document.domain)</script>
+    and the alert really fires.
+
+    Design note on the flag: unlike the SQLi challenge, "did the
+    exploit work" for XSS isn't something this server can observe by
+    itself, script execution happens in the visitor's browser, not
+    here. Rather than stand up a headless-browser bot to prove it, the
+    flag is revealed when `message` contains an unescaped script
+    trigger (a <script> tag or an inline event handler like onerror=),
+    which is exactly the signature of a payload that would execute.
+    That's a deliberate simplification, not a claim that this route
+    itself renders the page and inspects it, worth being explicit
+    about in the write-up.
+    """
+    message = request.args.get("message", "")
+    flag = XSS_FLAG if _looks_like_working_xss_payload(message) else None
+    return render_template("feedback.html", message=message, flag=flag)
+
+
+def _looks_like_working_xss_payload(message: str) -> bool:
+    lowered = message.lower()
+    return "<script" in lowered or "onerror=" in lowered or "onload=" in lowered
 
 
 with app.app_context():

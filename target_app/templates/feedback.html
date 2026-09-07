@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Feedback Board</title>
+</head>
+<body>
+    <h1>Staff Feedback Board</h1>
+
+    {% if flag %}
+    <p><strong>Flag:</strong> {{ flag }} (submit this flag at breachbox_app's /api/submit)</p>
+    {% endif %}
+
+    <form method="GET" action="/feedback">
+        <label>Leave feedback<br>
+            <input type="text" name="message" size="60">
+        </label>
+        <button type="submit">Submit</button>
+    </form>
+
+    <h2>Latest feedback</h2>
+    <div id="feedback-display">
+        {{ message|safe }}
+    </div>
+</body>
+</html>
