@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Network Diagnostics{% endblock %}
+{% block content %}
+<h1>Staff Network Diagnostics</h1>
+<form method="POST" action="/diagnostics">
+    <label>Host to ping<input type="text" name="host" placeholder="127.0.0.1"></label>
+    <button type="submit">Ping</button>
+</form>
+{% if output is not none %}
+<h2>Output</h2>
+<pre id="feedback-display">{{ output }}</pre>
+{% endif %}
+{% endblock %}
