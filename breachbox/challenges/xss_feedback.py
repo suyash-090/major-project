@@ -1,5 +1,5 @@
 """
-Vulnerability Set 1, second half: reflected XSS on target_app's staff
+Week 6-7 "Vulnerability Set 1": reflected XSS on target_app's staff
 feedback board (see target_app/app.py's GET /feedback route).
 
 Same shape as sqli_login.py: check_solution() hashes the submitted flag
@@ -20,6 +20,11 @@ class ReflectedXssFeedback(Challenge):
     category = "Web"              # must be one of Challenge.VALID_CATEGORIES
     difficulty = "Easy"           # must be one of Challenge.VALID_DIFFICULTIES
     points = 100
+    description = (
+        "A feedback board where visitors can leave a message. Something "
+        "about how that message gets shown back to you might be worth "
+        "checking."
+    )
 
     def check_solution(self, submitted_flag: str) -> bool:
         submitted_hash = hashlib.sha256(submitted_flag.strip().encode()).hexdigest()

@@ -17,6 +17,10 @@ class CommandInjectionDiagnostics(Challenge):
     category = "Injection"        # must be one of Challenge.VALID_CATEGORIES
     difficulty = "Hard"           # must be one of Challenge.VALID_DIFFICULTIES
     points = 200
+    description = (
+        "A staff network diagnostics tool that pings a host you provide. "
+        "What else might that host field let you do?"
+    )
 
     def check_solution(self, submitted_flag: str) -> bool:
         submitted_hash = hashlib.sha256(submitted_flag.strip().encode()).hexdigest()

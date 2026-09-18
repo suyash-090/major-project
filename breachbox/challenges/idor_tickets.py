@@ -17,6 +17,10 @@ class IdorTickets(Challenge):
     category = "Access Control"   # must be one of Challenge.VALID_CATEGORIES
     difficulty = "Medium"         # must be one of Challenge.VALID_DIFFICULTIES
     points = 150
+    description = (
+        "A lightweight support-ticket system. File a ticket of your own, "
+        "then see what else you can find."
+    )
 
     def check_solution(self, submitted_flag: str) -> bool:
         submitted_hash = hashlib.sha256(submitted_flag.strip().encode()).hexdigest()

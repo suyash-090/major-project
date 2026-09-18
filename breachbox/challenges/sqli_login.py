@@ -25,6 +25,10 @@ class SqlInjectionLogin(Challenge):
     category = "Injection"       # must be one of Challenge.VALID_CATEGORIES
     difficulty = "Easy"          # must be one of Challenge.VALID_DIFFICULTIES
     points = 100
+    description = (
+        "A staff-only login portal for target_app. Find a way past the "
+        "password check without a valid staff password."
+    )
 
     def check_solution(self, submitted_flag: str) -> bool:
         submitted_hash = hashlib.sha256(submitted_flag.strip().encode()).hexdigest()
