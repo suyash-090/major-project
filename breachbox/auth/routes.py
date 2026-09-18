@@ -5,6 +5,11 @@ tech in the proposal and everything else (submissions, hint unlocks) needs
 a real current_user to attribute actions to. What's NOT built here yet:
 any styling, password reset, or admin-only registration restrictions,
 those are judgement calls for whoever picks this up in a later week.
+
+class_group was dropped from the registration form. The Student model
+still has the column (nullable=False), so every new account gets a
+placeholder value rather than requiring a change to the schema or to
+scoreboard.html, which still displays class_group for existing rows.
 """
 
 from flask import render_template, redirect, url_for, flash, request
@@ -19,10 +24,9 @@ from breachbox.models import Student
 def register():
     if request.method == "POST":
         display_name = request.form.get("display_name", "").strip()
-        class_group = request.form.get("class_group", "").strip()
         password = request.form.get("password", "")
 
-        if not display_name or not class_group or not password:
+        if not display_name or not password:
             flash("All fields are required.")
             return redirect(url_for("auth.register"))
 
@@ -30,7 +34,7 @@ def register():
             flash("That display name is already taken.")
             return redirect(url_for("auth.register"))
 
-        student = Student(display_name=display_name, class_group=class_group)
+        student = Student(display_name=display_name, class_group="N/A")
         student.set_password(password)
         db.session.add(student)
         db.session.commit()
