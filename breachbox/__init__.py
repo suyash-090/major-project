@@ -7,7 +7,7 @@ from breachbox.models import Student
 
 
 def create_app(config_class=Config):
-    app = Flask(__name__, instance_relative_config=True, template_folder="../templates")
+    app = Flask(__name__, instance_relative_config=True, template_folder="../templates", static_folder="../static")
     app.config.from_object(config_class)
 
     # Flask's instance folder holds things that shouldn't be in version
