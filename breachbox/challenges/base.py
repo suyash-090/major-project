@@ -26,11 +26,13 @@ class Challenge(ABC):
     VALID_CATEGORIES = ("Web", "Injection", "Access Control", "Other")
     VALID_DIFFICULTIES = ("Easy", "Medium", "Hard")
 
-    # Subclasses override these four class attributes.
+    # Subclasses override these class attributes. description is shown on
+    # the Week 11 dashboard, a one or two sentence teaser, not a solution.
     name: str = "Unnamed Challenge"
     category: str = "Other"
     difficulty: str = "Easy"
     points: int = 0
+    description: str = ""
 
     @abstractmethod
     def check_solution(self, submitted_flag: str) -> bool:
@@ -68,22 +70,6 @@ def discover_challenges(package_name: str = "breachbox.challenges"):
     (excluding Challenge itself) and returns them as a list. This is what
     lets new vulnerabilities be "discovered" automatically rather than
     manually registered somewhere.
-
-    Review-note fixes (see issue tracking discovery + DB schema review):
-      - Underscore-prefixed modules (_example_challenge.py,
-        _reference_sqli_login.py, etc.) are skipped. Those are explicitly
-        marked as placeholders/references, not real challenges, and
-        without this skip they'd get auto-synced into the DB as live
-        challenges the moment they're merged.
-      - A broken challenge file (import error or bad metadata) is caught
-        per-module and logged, rather than killing app startup for
-        everyone. With three of us adding challenge files concurrently,
-        one bad file shouldn't take the whole app down.
-      - Only classes actually *defined* in a given module are counted
-        (obj.__module__ == module.__name__), not ones merely imported
-        into its namespace (e.g. `from breachbox.challenges.other import
-        SomeChallenge` for reuse), which would otherwise get discovered,
-        and synced to the DB, twice.
     """
     discovered = []
     package = importlib.import_module(package_name)
@@ -121,22 +107,8 @@ def sync_challenges_to_db():
     """
     Ensures every discovered Challenge subclass has a matching row in the
     challenge table, creating one if it doesn't exist yet, or updating
-    its category/difficulty/points if a subclass changed since last run.
-
-    This is what lets Sameer or Suyash add a new Challenge subclass and
-    have it just show up in the database and the dashboard, without
-    anyone manually inserting a row for it.
-
-    Deliberate design note for the team: flag validation itself happens
-    by calling check_solution() on the actual Python class instance, NOT
-    by comparing against the flag_hash column here. The column still
-    exists and gets set, mainly so the schema matches the ERD and so a
-    hash is on record, but the source of truth for "is this flag correct"
-    is each Challenge subclass's own check_solution(), since that's where
-    the real logic already lives for something like the SQLi reference.
-    If the team later prefers DB-driven validation instead, that's a
-    genuine design decision to make on purpose, not something to
-    assume from this helper.
+    its category/difficulty/points/description if a subclass changed
+    since last run.
     """
     from breachbox.extensions import db
     from breachbox.models import Challenge
@@ -151,6 +123,7 @@ def sync_challenges_to_db():
                 category=cls.category,
                 difficulty=cls.difficulty,
                 points=cls.points,
+                description=cls.description,
                 flag_hash="managed_by_challenge_class",
             )
             db.session.add(row)
@@ -158,6 +131,7 @@ def sync_challenges_to_db():
             row.category = cls.category
             row.difficulty = cls.difficulty
             row.points = cls.points
+            row.description = cls.description
 
     db.session.commit()
     return discovered
