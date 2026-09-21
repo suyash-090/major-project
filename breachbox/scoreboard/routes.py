@@ -1,13 +1,6 @@
 """
-The scoring QUERY itself is built for real here, since it's the same
-logic as the scoreboard SQL view in the database schema (points earned
-from solved challenges, minus points spent on unlocked hints), and there
-is no good reason to leave that as a placeholder, it's schema-level work,
-not the Week 11 UX/UI work.
-
-What's still a placeholder: the template only renders a plain table right
-now. Wiring up Chart.js, the category filter, and live auto-refresh is
-Harry's Week 11 task, not part of this skeleton.
+Scoreboard math: points earned from solved challenges, minus points
+spent on unlocked hints.
 """
 
 from flask import render_template
@@ -20,14 +13,9 @@ from breachbox.models import Student, Challenge, Submission, Hint, HintUnlock
 
 
 def calculate_scoreboard():
-    """
-    Returns a list of dicts, one per student, each with total_score,
-    sorted highest first. Mirrors the `scoreboard` SQL view: a challenge
-    only counts once per student even if they had incorrect attempts
-    first, and unlocked hints deduct points.
-    """
-    # Distinct (student_id, challenge_id) pairs the student solved at
-    # least once, then sum those challenges' points.
+    """Returns one dict per student with total_score, sorted highest first."""
+    # Each (student, challenge) pair counted once, even with earlier
+    # incorrect attempts, then summed with hint costs subtracted.
     solved_points = (
         db.session.query(
             Submission.student_id,
