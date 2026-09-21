@@ -1,9 +1,6 @@
 """
-Hint unlocking, Week 11. A student can unlock any hint for any
-challenge at any time. Unlocking permanently costs points,
-calculate_scoreboard() in breachbox/scoreboard/routes.py already
-subtracts every unlocked hint's point_cost from a student's total.
-Re-requesting an already-unlocked hint never charges twice.
+Hint unlocking. Costs points, permanently; calculate_scoreboard() in
+scoreboard/routes.py deducts unlocked hints from the total.
 """
 
 from flask import jsonify

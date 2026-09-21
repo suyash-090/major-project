@@ -1,13 +1,8 @@
 """
-This is the VULNERABLE ZONE target app, a separate Flask service from
-breachbox_app, with its own tiny database, and no connection whatsoever
-to the real student/challenge/submission database in the protected zone.
-
-Four deliberate vulnerabilities live here, Vulnerability Sets 1 and 2:
-  - SQL injection ("Staff Portal Login Bypass"), POST /login
-  - Reflected XSS ("Staff Feedback Reflected XSS"), GET /feedback
-  - IDOR / broken access control ("Support Ticket IDOR"), GET /tickets/<id>
-  - OS command injection ("Diagnostics Command Injection"), POST /diagnostics
+target_app: the deliberately vulnerable app (vulnerable zone).
+Separate Flask service and database from breachbox_app, no connection
+between them. Four vulnerabilities: SQLi (/login), XSS (/feedback),
+IDOR (/tickets/<id>), command injection (/diagnostics).
 """
 
 import os
@@ -29,6 +24,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
+# Plaintext flags. breachbox/challenges/ only ever stores the hash of each.
 SQLI_FLAG = "flag{sql1_st4ff_p0rt4l_byp4ss_2026}"
 XSS_FLAG = "flag{r3fl3ct3d_xss_st4ff_f33db4ck_2026}"
 IDOR_FLAG = "flag{1d0r_t1ck3t_3num3r4t10n_2026}"
@@ -99,6 +95,9 @@ def login_submit():
     username = request.form.get("username", "")
     password = request.form.get("password", "")
 
+    # VULNERABLE: raw f-string SQL instead of a parameterized query, so a
+    # quote in `username` can break out of the string and change the
+    # query's logic, e.g. admin' OR '1'='1
     query = (
         f"SELECT * FROM staff_users WHERE username = '{username}' "
         f"AND password = '{password}'"
@@ -123,6 +122,8 @@ def feedback():
 
 
 def _looks_like_working_xss_payload(message: str) -> bool:
+    # Signature check standing in for real browser execution, see
+    # feedback.html's |safe filter, that's the actual vulnerability.
     lowered = message.lower()
     return "<script" in lowered or "onerror=" in lowered or "onload=" in lowered
 
@@ -145,6 +146,8 @@ def create_ticket():
 
 @app.route("/tickets/<int:ticket_id>", methods=["GET"])
 def view_ticket(ticket_id):
+    # VULNERABLE: no check that the requester owns this ticket, or is
+    # staff at all, any valid ID returns that ticket's content.
     ticket = db.session.get(Ticket, ticket_id)
     if ticket is None:
         return "No such ticket", 404
@@ -160,6 +163,8 @@ def diagnostics_form():
 def diagnostics_run():
     host = request.form.get("host", "")
     try:
+        # VULNERABLE: shell=True with unsanitized input lets shell
+        # metacharacters (; && |) chain in a second, arbitrary command.
         result = subprocess.run(
             f"ping -c 1 {host}",
             shell=True,

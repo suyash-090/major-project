@@ -1,9 +1,6 @@
 """
-This is the modular challenge-loader architecture described in Section 2.1
-of the proposal. Every vulnerability, current and future, is a subclass of
-Challenge, dropped into this /challenges folder. discover_challenges() finds
-them automatically, so adding Vulnerability Set 2 in Week 10 means writing
-one new class here, not touching Flask routes anywhere else.
+Modular challenge-loader. Every vulnerability is a Challenge subclass
+dropped into this folder; discover_challenges() finds them automatically.
 """
 
 import importlib
@@ -13,21 +10,12 @@ from abc import ABC, abstractmethod
 
 
 class Challenge(ABC):
-    """
-    Abstract base class. Every real vulnerability (SQLi, XSS, IDOR, command
-    injection, the eventual chained exploit) subclasses this and fills in
-    the four attributes plus check_solution().
-
-    category must be one of Challenge.VALID_CATEGORIES, matching the
-    Challenge model's category column in models.py, so a subclass here and
-    a database row for it always agree on what values are valid.
-    """
+    """Base class every vulnerability subclasses. category must be one
+    of VALID_CATEGORIES, matching the Challenge model's column."""
 
     VALID_CATEGORIES = ("Web", "Injection", "Access Control", "Other")
     VALID_DIFFICULTIES = ("Easy", "Medium", "Hard")
 
-    # Subclasses override these class attributes. description is shown on
-    # the Week 11 dashboard, a one or two sentence teaser, not a solution.
     name: str = "Unnamed Challenge"
     category: str = "Other"
     difficulty: str = "Easy"
@@ -36,22 +24,12 @@ class Challenge(ABC):
 
     @abstractmethod
     def check_solution(self, submitted_flag: str) -> bool:
-        """
-        Return True if submitted_flag is correct for this challenge, False
-        otherwise. The actual comparison logic (hashing, lookup, whatever
-        each challenge needs) is written per-subclass here, not in the
-        Flask route that calls it.
-        """
         raise NotImplementedError
 
     @classmethod
     def validate_metadata(cls):
-        """
-        Sanity-checks a subclass's category and difficulty against the
-        allowed values, so a typo in a new Challenge subclass fails loudly
-        at startup instead of silently breaking the dashboard's category
-        filter later.
-        """
+        # Fails loudly at startup on a bad category/difficulty, instead
+        # of silently breaking the dashboard's filter later.
         if cls.category not in cls.VALID_CATEGORIES:
             raise ValueError(
                 f"{cls.__name__} has invalid category '{cls.category}', "
@@ -65,12 +43,7 @@ class Challenge(ABC):
 
 
 def discover_challenges(package_name: str = "breachbox.challenges"):
-    """
-    Scans the given package for every class that subclasses Challenge
-    (excluding Challenge itself) and returns them as a list. This is what
-    lets new vulnerabilities be "discovered" automatically rather than
-    manually registered somewhere.
-    """
+    """Finds every Challenge subclass defined in this package."""
     discovered = []
     package = importlib.import_module(package_name)
 
@@ -104,12 +77,7 @@ def discover_challenges(package_name: str = "breachbox.challenges"):
 
 
 def sync_challenges_to_db():
-    """
-    Ensures every discovered Challenge subclass has a matching row in the
-    challenge table, creating one if it doesn't exist yet, or updating
-    its category/difficulty/points/description if a subclass changed
-    since last run.
-    """
+    """Creates or updates a Challenge row for every discovered subclass."""
     from breachbox.extensions import db
     from breachbox.models import Challenge
 

@@ -1,8 +1,6 @@
 """
-Real dashboard, Week 11. Every Challenge, each with its Hints
-(locked/unlocked per the current student), plus a site-wide
-recent-activity feed of the last 15 submissions. Optional ?category=
-query param narrows the challenge list.
+Dashboard: every Challenge with its Hints (locked/unlocked per student)
+and a recent-activity feed. Optional ?category= filter.
 """
 
 from flask import render_template, request
