@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}BreachBox{% endblock %}
+{% block content %}
+<h1>BreachBox</h1>
+<p>A hands-on security training range. You attack a deliberately broken staff
+portal, capture the flag each bug hides, then submit it here to score.</p>
+
+<section>
+    <h2>How it works</h2>
+    <ol>
+        <li>Exploit a challenge on the target app (the vulnerable zone, on port 5001).</li>
+        <li>Copy the flag string it reveals.</li>
+        <li>Submit it on your dashboard here. A short write-up is required, and hints cost points.</li>
+    </ol>
+</section>
+
+<section>
+    <h2>Get started</h2>
+    {% if current_user.is_authenticated %}
+    <p><a href="{{ url_for('dashboard.home') }}">Go to your dashboard</a>, or view the <a href="{{ url_for('scoreboard.view') }}">scoreboard</a>.</p>
+    {% else %}
+    <p><a href="{{ url_for('auth.register') }}">Create an account</a>, or <a href="{{ url_for('auth.login') }}">log in</a> if you already have one.</p>
+    {% endif %}
+</section>
+{% endblock %}

@@ -2,7 +2,8 @@
 target_app: the deliberately vulnerable app (vulnerable zone).
 Separate Flask service and database from breachbox_app, no connection
 between them. Four vulnerabilities: SQLi (/login), XSS (/feedback),
-IDOR (/tickets/<id>), command injection (/diagnostics).
+IDOR (/tickets/<id>), command injection (/diagnostics), path traversal
+(/reports), and a chained ticket-IDOR to staff-console step (/staff/console).
 """
 
 import os
@@ -16,6 +17,8 @@ app = Flask(__name__)
 _APP_DIR = os.path.dirname(os.path.abspath(__file__))
 _DB_PATH = os.path.join(_APP_DIR, "target_app.db")
 _OPS_NOTES_PATH = os.path.join(_APP_DIR, "ops_notes.txt")
+_REPORTS_DIR = os.path.join(_APP_DIR, "reports")
+_STAFF_REPORT_FLAG_PATH = os.path.join(_APP_DIR, "staff_only_report.txt")
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
     "DATABASE_URL", f"sqlite:///{_DB_PATH}"
@@ -29,6 +32,14 @@ SQLI_FLAG = "flag{sql1_st4ff_p0rt4l_byp4ss_2026}"
 XSS_FLAG = "flag{r3fl3ct3d_xss_st4ff_f33db4ck_2026}"
 IDOR_FLAG = "flag{1d0r_t1ck3t_3num3r4t10n_2026}"
 CMDI_FLAG = "flag{cmd1_p1ng_ut1l1ty_1nj3ct10n_2026}"
+PTRAVERSAL_FLAG = "flag{p4th_tr4v3rs4l_r3p0rt_v13w3r_2026}"
+CHAINED_FLAG = "flag{ch41n3d_1d0r_t0_st4ff_c0ns0l3_2026}"
+
+# Shared staff-console session token. It is deliberately leaked inside a
+# staff ticket (see seed_staff_console_ticket), so the chained challenge is:
+# read that ticket through the ticket IDOR, then reuse the token at
+# /staff/console.
+STAFF_CONSOLE_TOKEN = "s3ss-9f2a7c41-staff-console"
 
 
 class StaffUser(db.Model):
@@ -80,9 +91,48 @@ def seed_ops_notes_file():
             )
 
 
+def seed_reports():
+    # Innocuous staff reports live inside _REPORTS_DIR. The real flag file is
+    # written one level ABOVE it, so from the report viewer it is only
+    # reachable by escaping the folder with ../ (the path-traversal bug).
+    os.makedirs(_REPORTS_DIR, exist_ok=True)
+    seed_files = {
+        "weekly_summary.txt": "Weekly staff summary: nothing unusual to report.\n",
+        "incident_log.txt": "Incident log: 0 open incidents this week.\n",
+    }
+    for filename, contents in seed_files.items():
+        path = os.path.join(_REPORTS_DIR, filename)
+        if not os.path.exists(path):
+            with open(path, "w") as f:
+                f.write(contents)
+    if not os.path.exists(_STAFF_REPORT_FLAG_PATH):
+        with open(_STAFF_REPORT_FLAG_PATH, "w") as f:
+            f.write(
+                "Staff-only report, not meant to be served by the viewer.\n"
+                f"Flag: {PTRAVERSAL_FLAG}\n"
+            )
+
+
+def seed_staff_console_ticket():
+    # Leaves the staff-console token inside a ticket that is not the
+    # requester's own, so it is reachable through the ticket IDOR. This is
+    # step one of the chained challenge.
+    existing = Ticket.query.filter_by(subject="Staff console access").first()
+    if existing is None:
+        db.session.add(Ticket(
+            requester_name="itsupport",
+            subject="Staff console access",
+            body=(
+                "Reminder for staff: the internal console session token is "
+                f"{STAFF_CONSOLE_TOKEN}. Do not share it outside the team."
+            ),
+        ))
+        db.session.commit()
+
+
 @app.route("/")
 def index():
-    return "Target app is alive (vulnerable zone)"
+    return render_template("home.html")
 
 
 @app.route("/login", methods=["GET"])
@@ -178,11 +228,58 @@ def diagnostics_run():
     return render_template("diagnostics.html", output=output)
 
 
+@app.route("/reports", methods=["GET"])
+def reports():
+    available = sorted(os.listdir(_REPORTS_DIR)) if os.path.isdir(_REPORTS_DIR) else []
+    name = request.args.get("name", "")
+    if not name:
+        return render_template(
+            "reports.html", files=available, name=None, content=None, error=None
+        )
+
+    # VULNERABLE: the requested name is joined straight onto the reports
+    # directory with no normalization or containment check, so a value like
+    # ../staff_only_report.txt escapes the folder and reads any file the
+    # process can open (path traversal / local file disclosure).
+    path = os.path.join(_REPORTS_DIR, name)
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            content = f.read()
+    except (FileNotFoundError, IsADirectoryError, PermissionError, OSError):
+        return (
+            render_template(
+                "reports.html",
+                files=available,
+                name=name,
+                content=None,
+                error="Could not read that file.",
+            ),
+            404,
+        )
+    return render_template(
+        "reports.html", files=available, name=name, content=content, error=None
+    )
+
+
+@app.route("/staff/console", methods=["GET"])
+def staff_console():
+    # Step two of the chained challenge. Protection here is only a single
+    # shared token in the query string, and that token is already leaked in a
+    # ticket reachable via the ticket IDOR, so a valid ticket ID chains
+    # straight into staff-console access.
+    token = request.args.get("token", "")
+    if token != STAFF_CONSOLE_TOKEN:
+        return render_template("staff_console.html", authorised=False, flag=None), 403
+    return render_template("staff_console.html", authorised=True, flag=CHAINED_FLAG)
+
+
 with app.app_context():
     db.create_all()
     seed_dummy_staff_accounts()
     seed_admin_ticket()
+    seed_staff_console_ticket()
     seed_ops_notes_file()
+    seed_reports()
 
 
 if __name__ == "__main__":

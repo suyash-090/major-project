@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Staff Console{% endblock %}
+{% block content %}
+<h1>Staff Console</h1>
+{% if authorised %}
+<p>Access granted. Welcome, staff.</p>
+<pre id="feedback-display">Flag: {{ flag }}
+(submit this flag at breachbox_app's /api/submit)</pre>
+{% else %}
+<p class="warning">Forbidden: a valid staff session token is required.</p>
+<p>Reach the console with <code>/staff/console?token=...</code>. Staff already hold their token; it is not published on this page.</p>
+{% endif %}
+{% endblock %}
