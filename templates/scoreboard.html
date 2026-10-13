@@ -3,6 +3,8 @@
 {% block content %}
 <h1>Scoreboard</h1>
 
+<canvas id="scoreboardChart" height="120"></canvas>
+
 <table>
     <thead>
         <tr><th>Rank</th><th>Student</th><th>Class</th><th>Points</th></tr>
@@ -21,6 +23,28 @@
     </tbody>
 </table>
 
-<p><em>TODO, Week 11: render this as a Chart.js bar chart instead of a plain
-table, Chart.js is already loaded in base.html, ready to use.</em></p>
+<script>
+var scoreboardData = {{ scoreboard | tojson }};
+if (scoreboardData.length > 0) {
+    var ctx = document.getElementById("scoreboardChart").getContext("2d");
+    new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: scoreboardData.map(function (r) { return r.display_name; }),
+            datasets: [{
+                label: "Points",
+                data: scoreboardData.map(function (r) { return r.total_score; }),
+                backgroundColor: "#3fb6f0",
+            }],
+        },
+        options: {
+            scales: {
+                y: { beginAtZero: true, ticks: { color: "#8b949e" }, grid: { color: "#30363d" } },
+                x: { ticks: { color: "#8b949e" }, grid: { color: "#30363d" } },
+            },
+            plugins: { legend: { display: false } },
+        },
+    });
+}
+</script>
 {% endblock %}

@@ -1,22 +1,110 @@
 {% extends "base.html" %}
 {% block title %}Dashboard, BreachBox{% endblock %}
 {% block content %}
-<h1>Welcome, {{ student.display_name }}</h1>
+<h1>Dashboard</h1>
+<p>Logged in as {{ student.display_name }} ({{ student.class_group }})</p>
 
-<section>
-    <h2>Categories</h2>
-    <p><em>TODO, Week 11: filter list (All Challenges, Web, Injection, Access Control),
-    built once Challenge rows exist.</em></p>
-</section>
+<div class="category-filters">
+    <a href="{{ url_for('dashboard.home') }}" class="{{ 'active' if not active_category else '' }}">All</a>
+    {% for cat in categories %}
+    <a href="{{ url_for('dashboard.home', category=cat) }}" class="{{ 'active' if active_category == cat else '' }}">{{ cat }}</a>
+    {% endfor %}
+</div>
 
-<section>
-    <h2>Challenges</h2>
-    <p><em>TODO, Week 11: list of available Challenge subclasses, pulled via
-    discover_challenges(), shown with category, difficulty, and points.</em></p>
-</section>
+{% for item in challenge_data %}
+{% set c = item.challenge %}
+<section class="challenge-card">
+    <h2>{{ c.name }}</h2>
+    <p class="challenge-meta">{{ c.category }} &middot; {{ c.difficulty }} &middot; {{ c.points }} pts</p>
+    {% if c.description %}
+    <p>{{ c.description }}</p>
+    {% endif %}
 
-<section>
-    <h2>Recent submissions</h2>
-    <p><em>TODO, Week 11: feed of this student's recent Submission rows.</em></p>
+    {% if item.hints %}
+    <div class="hints">
+        {% for h in item.hints %}
+            {% if h.unlocked %}
+            <p class="hint unlocked">Hint: {{ h.hint.text }}</p>
+            {% else %}
+            <form class="hint-unlock-form" data-hint-id="{{ h.hint.hint_id }}">
+                <button type="submit">Unlock hint (-{{ h.hint.point_cost }} pts)</button>
+            </form>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form class="submit-form" data-challenge-id="{{ c.challenge_id }}">
+        <label>Flag<input type="text" name="flag" placeholder="flag{...}"></label>
+        <label>Write-up<textarea name="writeup_text" rows="2" placeholder="Briefly explain how you found it"></textarea></label>
+        <button type="submit">Submit flag</button>
+        <p class="submit-result"></p>
+    </form>
 </section>
+{% endfor %}
+
+<h2>Recent activity</h2>
+<table>
+    <thead>
+        <tr><th>Student</th><th>Challenge</th><th>Result</th><th>When</th></tr>
+    </thead>
+    <tbody>
+        {% for sub in recent_submissions %}
+        <tr>
+            <td>{{ sub.student.display_name }}</td>
+            <td>{{ sub.challenge.name }}</td>
+            <td>{{ "Correct" if sub.is_correct else "Incorrect" }}</td>
+            <td>{{ sub.submitted_at.strftime("%H:%M:%S") }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">No submissions yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+document.querySelectorAll(".hint-unlock-form").forEach(function (form) {
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var hintId = form.dataset.hintId;
+        fetch("/hints/unlock/" + hintId, { method: "POST" })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                var p = document.createElement("p");
+                p.className = "hint unlocked";
+                p.textContent = "Hint: " + data.text;
+                form.replaceWith(p);
+            });
+    });
+});
+
+document.querySelectorAll(".submit-form").forEach(function (form) {
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var challengeId = form.dataset.challengeId;
+        var flag = form.querySelector('[name="flag"]').value;
+        var writeup = form.querySelector('[name="writeup_text"]').value;
+        var resultEl = form.querySelector(".submit-result");
+        var body = new URLSearchParams({
+            challenge_id: challengeId,
+            flag: flag,
+            writeup_text: writeup,
+        });
+        fetch("/api/submit", { method: "POST", body: body })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                if (data.is_correct && data.recorded) {
+                    resultEl.textContent = "Correct! Recorded.";
+                    resultEl.className = "submit-result success";
+                } else if (data.is_correct) {
+                    resultEl.textContent = data.error || "Correct, but not recorded.";
+                    resultEl.className = "submit-result fail";
+                } else {
+                    resultEl.textContent = data.error || "Incorrect.";
+                    resultEl.className = "submit-result fail";
+                }
+            });
+    });
+});
+</script>
 {% endblock %}

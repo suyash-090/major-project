@@ -16,6 +16,7 @@
   --accent: #3fb6f0;
   --accent-dim: #1f4a5c;
   --points: #4fbf7f;
+  --danger: #e8863a;
   --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
   --font-sans: -apple-system, "Segoe UI", Roboto, sans-serif;
 }
@@ -32,7 +33,7 @@ body {
 
 a { color: var(--accent); }
 a:hover { color: #6cc9f2; }
-a:focus-visible, button:focus-visible, input:focus-visible {
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
@@ -130,7 +131,7 @@ label {
   gap: 6px;
 }
 
-input[type="text"], input[type="password"] {
+input[type="text"], input[type="password"], textarea {
   font-family: var(--font-sans);
   font-size: 0.95rem;
   background: var(--bg);
@@ -139,6 +140,8 @@ input[type="text"], input[type="password"] {
   border-radius: 3px;
   padding: 8px 10px;
 }
+
+textarea { resize: vertical; }
 
 button {
   font-family: var(--font-mono);
@@ -178,3 +181,76 @@ td:last-child, th:last-child {
   color: var(--points);
   text-align: right;
 }
+
+/* Week 11 additions: challenge cards, hints, category filters, and
+   inline flag-submission results on the dashboard. */
+
+.category-filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.category-filters a {
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+.category-filters a:hover,
+.category-filters a.active {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.challenge-card { max-width: 100%; }
+
+.challenge-meta {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: -4px;
+}
+
+.hints {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.hints form { max-width: none; }
+
+.hint {
+  font-size: 0.9rem;
+  background: var(--bg);
+  border: 1px dashed var(--border);
+  border-radius: 3px;
+  padding: 8px 12px;
+  margin: 0;
+}
+
+.hint.unlocked { border-style: solid; }
+
+.submit-form {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  max-width: 100%;
+}
+
+.submit-result {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  margin: 4px 0 0;
+}
+
+.submit-result.success { color: var(--points); }
+.submit-result.fail { color: var(--danger); }
+
+#scoreboardChart { margin-bottom: 24px; }
