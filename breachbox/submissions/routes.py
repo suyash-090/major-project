@@ -10,6 +10,7 @@ from breachbox.submissions import submissions_bp
 from breachbox.extensions import db
 from breachbox.models import Challenge, Submission
 from breachbox.challenges.base import discover_challenges
+from breachbox.ratelimit import flag_limiter
 
 
 def _find_challenge_class_by_name(name):
@@ -58,7 +59,22 @@ def submit():
         # no re-sync, a setup problem, not the student's fault.
         return jsonify({"error": "challenge is misconfigured, no matching class found"}), 500
 
+    # Rate limit wrong guesses per student+challenge so a flag can't be
+    # brute-forced. A correct solve clears the counter.
+    rl_key = f"{current_user.student_id}:{challenge_row.challenge_id}"
+    allowed, retry_after = flag_limiter.check(rl_key)
+    if not allowed:
+        return jsonify({
+            "error": f"too many attempts on this challenge, wait about {retry_after}s",
+            "is_correct": False,
+            "recorded": False,
+        }), 429
+
     is_correct = challenge_class().check_solution(submitted_flag)
+    if is_correct:
+        flag_limiter.reset(rl_key)
+    else:
+        flag_limiter.record(rl_key)
 
     if is_correct:
         # Already-solved check, backed by a DB-level unique index on
