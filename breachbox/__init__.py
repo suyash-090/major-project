@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, render_template
 
 from config import Config
 from breachbox.extensions import db, login_manager
@@ -39,7 +39,7 @@ def create_app(config_class=Config):
 
     @app.route("/")
     def index():
-        return "BreachBox is alive"
+        return render_template("home.html")
 
     with app.app_context():
         db.create_all()
@@ -102,6 +102,17 @@ def _seed_hints_if_needed():
                 "special to a shell.", 40),
             (2, "In a Unix shell, a semicolon lets you run a second, "
                 "separate command right after the first one finishes.", 80),
+        ],
+        "Report Viewer Path Traversal": [
+            (1, "The report viewer builds the file path straight from the "
+                "?name= value. What characters let you climb up out of the "
+                "reports folder?", 25),
+        ],
+        "Chained: Ticket Leak to Staff Console": [
+            (1, "The staff console wants a token. Staff tickets aren't private "
+                "here, so could one of them be leaking a token you can read?", 30),
+            (2, "Read ticket number 2 through the ticket IDOR, take the token "
+                "from its body, then pass it to /staff/console as ?token=...", 60),
         ],
     }
 
