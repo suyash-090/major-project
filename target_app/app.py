@@ -132,7 +132,7 @@ def seed_staff_console_ticket():
 
 @app.route("/")
 def index():
-    return "Target app is alive (vulnerable zone)"
+    return render_template("home.html")
 
 
 @app.route("/login", methods=["GET"])
