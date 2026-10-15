@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, render_template
 
 from config import Config
 from breachbox.extensions import db, login_manager
@@ -39,11 +39,12 @@ def create_app(config_class=Config):
 
     @app.route("/")
     def index():
-        return "BreachBox is alive"
+        return render_template("home.html")
 
     with app.app_context():
         db.create_all()
         _sync_and_print_challenges()
+        _seed_hints_if_needed()
 
     return app
 
@@ -61,3 +62,70 @@ def _sync_and_print_challenges():
     print(f"[BreachBox] Discovered and synced {len(found)} challenge subclass(es):")
     for cls in found:
         print(f"  - {cls.name} ({cls.category}, {cls.difficulty}, {cls.points} pts)")
+
+
+def _seed_hints_if_needed():
+    """
+    Runs once at startup, after challenges are synced (so challenge_id
+    lookups by name succeed). One hint ladder per challenge, seeded only
+    if the hint table is empty, so this never overwrites hints a real
+    student has already unlocked. Point costs scale with difficulty,
+    matching the point-penalty design in the proposal.
+
+    These are written as nudges, not answers, on purpose. This is the
+    same database the Week 13 dry-run CTF runs against.
+    """
+    from breachbox.extensions import db
+    from breachbox.models import Challenge, Hint
+
+    if Hint.query.count() > 0:
+        return
+
+    hint_ladder = {
+        "Staff Portal Login Bypass": [
+            (1, "The login route builds its SQL query with an f-string. "
+                "What happens if your username includes a quote character?", 20),
+        ],
+        "Staff Feedback Reflected XSS": [
+            (1, "Check how the message query parameter gets rendered on "
+                "the page. Does anything strip or escape HTML tags in it?", 20),
+        ],
+        "Support Ticket IDOR": [
+            (1, "After you submit your own ticket, look closely at the ID "
+                "in the URL. What happens if you try a smaller number?", 25),
+            (2, "Ticket IDs are assigned in creation order starting from 1. "
+                "The very first ticket ever created wasn't yours.", 50),
+        ],
+        "Diagnostics Command Injection": [
+            (1, "The diagnostics tool runs a real shell command behind the "
+                "scenes. Some punctuation characters mean something "
+                "special to a shell.", 40),
+            (2, "In a Unix shell, a semicolon lets you run a second, "
+                "separate command right after the first one finishes.", 80),
+        ],
+        "Report Viewer Path Traversal": [
+            (1, "The report viewer builds the file path straight from the "
+                "?name= value. What characters let you climb up out of the "
+                "reports folder?", 25),
+        ],
+        "Chained: Ticket Leak to Staff Console": [
+            (1, "The staff console wants a token. Staff tickets aren't private "
+                "here, so could one of them be leaking a token you can read?", 30),
+            (2, "Read ticket number 2 through the ticket IDOR, take the token "
+                "from its body, then pass it to /staff/console as ?token=...", 60),
+        ],
+    }
+
+    for challenge_name, hints in hint_ladder.items():
+        challenge = Challenge.query.filter_by(name=challenge_name).first()
+        if challenge is None:
+            continue
+        for order, text, cost in hints:
+            db.session.add(Hint(
+                challenge_id=challenge.challenge_id,
+                hint_order=order,
+                text=text,
+                point_cost=cost,
+            ))
+
+    db.session.commit()
