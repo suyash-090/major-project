@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Staff Reports{% endblock %}
+{% block content %}
+<h1>Staff Report Viewer</h1>
+<p>Available reports:</p>
+<ul>
+    {% for f in files %}
+    <li><a href="/reports?name={{ f }}">{{ f }}</a></li>
+    {% else %}
+    <li>No reports found.</li>
+    {% endfor %}
+</ul>
+<form method="GET" action="/reports">
+    <label>Report file name<input type="text" name="name" placeholder="weekly_summary.txt"></label>
+    <button type="submit">View report</button>
+</form>
+{% if error %}
+<p class="warning">{{ error }}</p>
+{% endif %}
+{% if content is not none %}
+<h2>{{ name }}</h2>
+<pre id="feedback-display">{{ content }}</pre>
+{% endif %}
+{% endblock %}

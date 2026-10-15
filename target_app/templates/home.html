@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Staff Portal{% endblock %}
+{% block content %}
+<h1>Acme Support Staff Portal</h1>
+<p>Internal tools for support staff. Use the menu above, or the links below, to
+sign in, leave feedback, raise a ticket, run diagnostics, or read reports.</p>
+<section>
+    <h2>Tools</h2>
+    <ul>
+        <li><a href="/login">Staff login</a></li>
+        <li><a href="/feedback">Feedback board</a></li>
+        <li><a href="/tickets/new">Submit a ticket</a></li>
+        <li><a href="/diagnostics">Network diagnostics</a></li>
+        <li><a href="/reports">Report viewer</a></li>
+        <li><a href="/staff/console">Staff console</a></li>
+    </ul>
+</section>
+{% endblock %}
