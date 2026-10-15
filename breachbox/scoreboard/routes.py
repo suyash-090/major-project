@@ -3,7 +3,7 @@ Scoreboard math: points earned from solved challenges, minus points
 spent on unlocked hints.
 """
 
-from flask import render_template
+from flask import jsonify, render_template
 from flask_login import login_required
 from sqlalchemy import func
 
@@ -72,6 +72,12 @@ def calculate_scoreboard():
     ]
     scoreboard.sort(key=lambda s: s["total_score"], reverse=True)
     return scoreboard
+
+
+@scoreboard_bp.route("/data")
+@login_required
+def data():
+    return jsonify(calculate_scoreboard())
 
 
 @scoreboard_bp.route("/")
