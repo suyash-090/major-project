@@ -40,6 +40,20 @@ only intended crossing point is a human: solve the challenge in
 `target_app`, get a flag string, submit it manually via
 `breachbox_app`'s `/api/submit`.
 
+## Running the tests
+
+Automated tests cover flag checking, challenge auto-discovery, the scoreboard
+maths, the flag submission API, and the login/flag-submission rate limiting.
+
+```
+pip install -r requirements.txt -r requirements-dev.txt
+pytest
+```
+
+48 tests, all under `tests/`. Each one runs against a throwaway temporary
+database built by the application factory, so the suite never touches your dev
+database and the tests don't depend on each other.
+
 ## What's here
 
 **Week 5 (skeleton):**
