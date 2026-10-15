@@ -28,6 +28,18 @@
 var scoreboardChart = null;
 var scoreboardDataUrl = "{{ url_for('scoreboard.data') }}";
 
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, function (ch) {
+        return {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+        }[ch];
+    });
+}
+
 function renderScoreboardTable(rows) {
     var tbody = document.getElementById("scoreboardBody");
     if (!tbody) return;
@@ -40,9 +52,9 @@ function renderScoreboardTable(rows) {
     tbody.innerHTML = rows.map(function (row, index) {
         return '<tr>' +
             '<td>' + (index + 1) + '</td>' +
-            '<td>' + row.display_name + '</td>' +
-            '<td>' + (row.class_group || "—") + '</td>' +
-            '<td>' + row.total_score + '</td>' +
+            '<td>' + escapeHtml(row.display_name) + '</td>' +
+            '<td>' + escapeHtml(row.class_group || "—") + '</td>' +
+            '<td>' + escapeHtml(row.total_score) + '</td>' +
             '</tr>';
     }).join("");
 }
