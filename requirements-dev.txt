@@ -1,0 +1,3 @@
+# Extra packages needed only to run the test suite (not to run the app).
+# Install with: pip install -r requirements.txt -r requirements-dev.txt
+pytest>=7.0
