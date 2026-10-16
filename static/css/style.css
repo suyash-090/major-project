@@ -253,4 +253,11 @@ td:last-child, th:last-child {
 .submit-result.success { color: var(--points); }
 .submit-result.fail { color: var(--danger); }
 
+.scoreboard-status {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: -6px 0 12px;
+}
+
 #scoreboardChart { margin-bottom: 24px; }
