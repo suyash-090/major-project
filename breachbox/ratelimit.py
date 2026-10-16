@@ -1,13 +1,6 @@
-"""
-Tiny in-memory attempt limiter, used to slow down brute-force style abuse of
-the login form and the flag-submission endpoint.
-
-This is intentionally simple: a fixed window of timestamps per key, held in
-process memory. It is NOT durable across a restart and NOT shared across
-multiple worker processes, which is fine for this teaching app running on a
-single Flask dev server. If BreachBox ever moved to a real multi-process
-deployment, this would become a Redis counter instead.
-"""
+"""In-memory attempt limiter for the login form and flag submissions. It's a
+fixed window of timestamps per key, kept in memory, which is fine for the
+single-process dev server we run this on."""
 
 import threading
 import time
@@ -37,18 +30,15 @@ class RateLimiter:
             return True, 0
 
     def record(self, key):
-        """Count one failed attempt against the key."""
         now = time.time()
         with self._lock:
             self._hits[key].append(now)
 
     def reset(self, key):
-        """Clear a key's history, e.g. after a successful login or solve."""
         with self._lock:
             self._hits.pop(key, None)
 
 
-# Shared limiters. Login: 5 failed tries per IP+name per 5 minutes. Flag
-# submission: 10 wrong guesses per student+challenge per 5 minutes.
+# Login: 5 tries per IP+name in 5 min. Flag: 10 wrong guesses per student+challenge in 5 min.
 login_limiter = RateLimiter(max_attempts=5, window_seconds=300)
 flag_limiter = RateLimiter(max_attempts=10, window_seconds=300)

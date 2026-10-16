@@ -1,7 +1,4 @@
-"""
-Hint unlocking. Costs points, permanently; calculate_scoreboard() in
-scoreboard/routes.py deducts unlocked hints from the total.
-"""
+"""Hint unlocking. Costs points, which the scoreboard later deducts from the total."""
 
 from flask import jsonify
 from flask_login import login_required, current_user

@@ -1,7 +1,4 @@
-"""
-Dashboard: every Challenge with its Hints (locked/unlocked per student)
-and a recent-activity feed. Optional ?category= filter.
-"""
+"""Dashboard: every challenge with its hints (locked or unlocked) and a recent-activity feed."""
 
 from flask import render_template, request
 from flask_login import login_required, current_user

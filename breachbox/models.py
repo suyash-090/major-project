@@ -5,11 +5,7 @@ from breachbox.extensions import db
 
 
 class Student(UserMixin, db.Model):
-    """
-    One row per participant. UserMixin bolts on the properties Flask-Login
-    needs (is_authenticated, is_active, get_id, etc.) so this class can be
-    used directly with @login_required and current_user.
-    """
+    """One row per participant. UserMixin gives it the Flask-Login hooks."""
     __tablename__ = "student"
 
     student_id = db.Column(db.Integer, primary_key=True)
@@ -22,17 +18,13 @@ class Student(UserMixin, db.Model):
     hint_unlocks = db.relationship("HintUnlock", backref="student", lazy=True)
 
     def set_password(self, raw_password):
-        # Never store a plaintext password. This hashes it with a salt
-        # baked in, using Werkzeug's default algorithm.
         self.password_hash = generate_password_hash(raw_password)
 
     def check_password(self, raw_password):
         return check_password_hash(self.password_hash, raw_password)
 
-    # Flask-Login needs get_id() to return a string. UserMixin provides a
-    # default that uses self.id, but our primary key is student_id, so we
-    # override it explicitly rather than relying on a naming coincidence.
     def get_id(self):
+        # Our primary key is student_id, not id, so override this for Flask-Login.
         return str(self.student_id)
 
     def __repr__(self):
@@ -40,15 +32,7 @@ class Student(UserMixin, db.Model):
 
 
 class Challenge(db.Model):
-    """
-    One row per deliberate vulnerability. The `category` column backs the
-    Challenge base class's category attribute (see challenges/base.py),
-    and is what the dashboard's category filter will query against once
-    that's built in Week 11.
-
-    flag_hash stores a hash of the correct flag, never the flag itself,
-    so the database isn't a second place the answer could leak from.
-    """
+    """One row per deliberate vulnerability. flag_hash stores a hash, not the flag."""
     __tablename__ = "challenge"
 
     VALID_CATEGORIES = ("Web", "Injection", "Access Control", "Other")
@@ -88,24 +72,10 @@ class Hint(db.Model):
 
 
 class Submission(db.Model):
-    """
-    One row per flag attempt, correct or not. This is a full attempt log,
-    not just a "solved" table, so incorrect attempts stay recorded for the
-    dashboard's recent submissions feed. writeup_text is only required by
-    the application layer when is_correct is True, that check belongs in
-    the flag-submission route, not here in the model.
-
-    __table_args__ adds a DB-level backstop for the "already solved" check
-    the flag-submission route makes at the app layer (see
-    breachbox/submissions/routes.py): at most one is_correct=True
-    Submission can ever exist per (student_id, challenge_id), so a bug in
-    the route logic can't award the same student points twice for the
-    same challenge. This is a partial unique index (SQLite-specific,
-    matching this project's DATABASE_URL), not a table-wide constraint,
-    since multiple incorrect attempts for the same pair are expected and
-    fine.
-    """
+    """One row per flag attempt, right or wrong, so it doubles as an attempt log."""
     __tablename__ = "submission"
+    # Partial unique index: only one correct submission per student+challenge,
+    # so points can't be awarded twice even if the route check slips.
     __table_args__ = (
         db.Index(
             "uq_submission_student_challenge_correct",
@@ -126,11 +96,7 @@ class Submission(db.Model):
 
 
 class HintUnlock(db.Model):
-    """
-    One row per hint a student has unlocked. The unique constraint means
-    unlocking the same hint twice never charges a student twice, matching
-    the point-penalty design in the proposal.
-    """
+    """One row per hint a student unlocked. Unique so it only ever charges once."""
     __tablename__ = "hint_unlock"
     __table_args__ = (
         db.UniqueConstraint("student_id", "hint_id", name="uq_student_hint"),

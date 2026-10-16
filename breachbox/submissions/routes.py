@@ -1,7 +1,4 @@
-"""
-Flag Submission API. Generic across any Challenge subclass, doesn't know
-anything about SQLi/XSS/IDOR/command injection specifically.
-"""
+"""Flag submission API. Works for any Challenge subclass."""
 
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
@@ -14,8 +11,6 @@ from breachbox.ratelimit import flag_limiter
 
 
 def _find_challenge_class_by_name(name):
-    # Bridges a DB Challenge row (points/category/display) to the actual
-    # Python class (validation logic).
     for cls in discover_challenges():
         if cls.name == name:
             return cls
@@ -55,12 +50,9 @@ def submit():
 
     challenge_class = _find_challenge_class_by_name(challenge_row.name)
     if challenge_class is None:
-        # DB row with no matching Python class, e.g. after a rename with
-        # no re-sync, a setup problem, not the student's fault.
         return jsonify({"error": "challenge is misconfigured, no matching class found"}), 500
 
-    # Rate limit wrong guesses per student+challenge so a flag can't be
-    # brute-forced. A correct solve clears the counter.
+    # Rate limit wrong guesses so a flag can't be brute-forced. A solve clears it.
     rl_key = f"{current_user.student_id}:{challenge_row.challenge_id}"
     allowed, retry_after = flag_limiter.check(rl_key)
     if not allowed:
@@ -77,8 +69,6 @@ def submit():
         flag_limiter.record(rl_key)
 
     if is_correct:
-        # Already-solved check, backed by a DB-level unique index on
-        # Submission, so this can't double-award points either way.
         already_solved = Submission.query.filter_by(
             student_id=current_user.student_id,
             challenge_id=challenge_row.challenge_id,

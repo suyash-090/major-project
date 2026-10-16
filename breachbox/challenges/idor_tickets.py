@@ -1,21 +1,17 @@
-"""
-Vulnerability Set 2: IDOR / broken access control on target_app's
-support ticket system (see target_app/app.py's GET /tickets/<id>
-route). Same shape as sqli_login.py and xss_feedback.py.
-"""
+"""IDOR / broken access control on target_app's /tickets/<id> route (Vulnerability Set 2)."""
 
 import hashlib
 
 from breachbox.challenges.base import Challenge
 
-# Must match target_app.app.IDOR_FLAG exactly.
+# Must match target_app.app.IDOR_FLAG.
 _FLAG_HASH = "c1fcceeaa03d3883635dd13ec72ff5466f9d1ee134db1d330d9f6abad632e8ff"
 
 
 class IdorTickets(Challenge):
     name = "Support Ticket IDOR"
-    category = "Access Control"   # must be one of Challenge.VALID_CATEGORIES
-    difficulty = "Medium"         # must be one of Challenge.VALID_DIFFICULTIES
+    category = "Access Control"
+    difficulty = "Medium"
     points = 150
 
     def check_solution(self, submitted_flag: str) -> bool:

@@ -1,22 +1,17 @@
-"""
-Path traversal on target_app's staff report viewer (see target_app/app.py's
-GET /reports route). Same shape as the other challenge files: check_solution()
-compares a SHA-256 of the submitted flag against the hash of the real flag,
-which only ever lives in target_app, never here.
-"""
+"""Path traversal on target_app's /reports route."""
 
 import hashlib
 
 from breachbox.challenges.base import Challenge
 
-# Must match target_app.app.PTRAVERSAL_FLAG exactly.
+# Must match target_app.app.PTRAVERSAL_FLAG.
 _FLAG_HASH = "b04b57c2303ce87584553a5776ddbb9ba44566deba5db03b15e8f8567ae86cff"
 
 
 class ReportViewerPathTraversal(Challenge):
     name = "Report Viewer Path Traversal"
-    category = "Web"              # must be one of Challenge.VALID_CATEGORIES
-    difficulty = "Medium"        # must be one of Challenge.VALID_DIFFICULTIES
+    category = "Web"
+    difficulty = "Medium"
     points = 150
     description = (
         "The staff report viewer builds a file path straight from the ?name= "

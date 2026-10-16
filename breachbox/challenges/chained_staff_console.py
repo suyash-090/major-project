@@ -1,23 +1,17 @@
-"""
-Chained challenge on target_app: the ticket IDOR feeds a staff-console
-privilege step (see target_app/app.py's GET /staff/console route). Same shape
-as the other challenge files: check_solution() compares a SHA-256 of the
-submitted flag against the hash of the real flag, which only ever lives in
-target_app, never here.
-"""
+"""Chained challenge: the ticket IDOR leaks a token reused at /staff/console."""
 
 import hashlib
 
 from breachbox.challenges.base import Challenge
 
-# Must match target_app.app.CHAINED_FLAG exactly.
+# Must match target_app.app.CHAINED_FLAG.
 _FLAG_HASH = "086dc75e1b5c1afa7a753bf3f8bef3748a64990893ed3bbc0c94293bd09a73d4"
 
 
 class ChainedStaffConsole(Challenge):
     name = "Chained: Ticket Leak to Staff Console"
-    category = "Access Control"   # must be one of Challenge.VALID_CATEGORIES
-    difficulty = "Hard"           # must be one of Challenge.VALID_DIFFICULTIES
+    category = "Access Control"
+    difficulty = "Hard"
     points = 250
     description = (
         "Two steps. First use the ticket IDOR to read a staff ticket that is "

@@ -1,10 +1,8 @@
-"""
-target_app: the deliberately vulnerable app (vulnerable zone).
-Separate Flask service and database from breachbox_app, no connection
-between them. Four vulnerabilities: SQLi (/login), XSS (/feedback),
-IDOR (/tickets/<id>), command injection (/diagnostics), path traversal
-(/reports), and a chained ticket-IDOR to staff-console step (/staff/console).
-"""
+"""target_app: the deliberately vulnerable site (the vulnerable zone). It's a
+separate Flask app and database from breachbox_app. Vulnerabilities: SQLi
+(/login), XSS (/feedback), IDOR (/tickets/<id>), command injection
+(/diagnostics), path traversal (/reports) and a chained IDOR to staff
+console (/staff/console)."""
 
 import os
 import subprocess
@@ -27,7 +25,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
-# Plaintext flags. breachbox/challenges/ only ever stores the hash of each.
+# Plaintext flags. breachbox only ever stores the hash of each.
 SQLI_FLAG = "flag{sql1_st4ff_p0rt4l_byp4ss_2026}"
 XSS_FLAG = "flag{r3fl3ct3d_xss_st4ff_f33db4ck_2026}"
 IDOR_FLAG = "flag{1d0r_t1ck3t_3num3r4t10n_2026}"
@@ -35,10 +33,8 @@ CMDI_FLAG = "flag{cmd1_p1ng_ut1l1ty_1nj3ct10n_2026}"
 PTRAVERSAL_FLAG = "flag{p4th_tr4v3rs4l_r3p0rt_v13w3r_2026}"
 CHAINED_FLAG = "flag{ch41n3d_1d0r_t0_st4ff_c0ns0l3_2026}"
 
-# Shared staff-console session token. It is deliberately leaked inside a
-# staff ticket (see seed_staff_console_ticket), so the chained challenge is:
-# read that ticket through the ticket IDOR, then reuse the token at
-# /staff/console.
+# Leaked on purpose inside a staff ticket, which is the chained challenge:
+# read the ticket through the IDOR, then reuse the token at /staff/console.
 STAFF_CONSOLE_TOKEN = "s3ss-9f2a7c41-staff-console"
 
 
@@ -92,9 +88,8 @@ def seed_ops_notes_file():
 
 
 def seed_reports():
-    # Innocuous staff reports live inside _REPORTS_DIR. The real flag file is
-    # written one level ABOVE it, so from the report viewer it is only
-    # reachable by escaping the folder with ../ (the path-traversal bug).
+    # The real flag file is written one level above _REPORTS_DIR, so it's only
+    # reachable from the viewer by escaping the folder with ../.
     os.makedirs(_REPORTS_DIR, exist_ok=True)
     seed_files = {
         "weekly_summary.txt": "Weekly staff summary: nothing unusual to report.\n",
@@ -114,9 +109,8 @@ def seed_reports():
 
 
 def seed_staff_console_ticket():
-    # Leaves the staff-console token inside a ticket that is not the
-    # requester's own, so it is reachable through the ticket IDOR. This is
-    # step one of the chained challenge.
+    # Puts the staff-console token in a ticket that isn't the viewer's own,
+    # so it's reachable through the ticket IDOR (step one of the chain).
     existing = Ticket.query.filter_by(subject="Staff console access").first()
     if existing is None:
         db.session.add(Ticket(
@@ -145,9 +139,7 @@ def login_submit():
     username = request.form.get("username", "")
     password = request.form.get("password", "")
 
-    # VULNERABLE: raw f-string SQL instead of a parameterized query, so a
-    # quote in `username` can break out of the string and change the
-    # query's logic, e.g. admin' OR '1'='1
+    # vulnerable: raw f-string SQL, so a quote like admin' OR '1'='1 breaks out.
     query = (
         f"SELECT * FROM staff_users WHERE username = '{username}' "
         f"AND password = '{password}'"
@@ -172,8 +164,8 @@ def feedback():
 
 
 def _looks_like_working_xss_payload(message: str) -> bool:
-    # Signature check standing in for real browser execution, see
-    # feedback.html's |safe filter, that's the actual vulnerability.
+    # Stands in for real browser execution; the actual bug is the |safe filter
+    # in feedback.html.
     lowered = message.lower()
     return "<script" in lowered or "onerror=" in lowered or "onload=" in lowered
 
@@ -196,8 +188,7 @@ def create_ticket():
 
 @app.route("/tickets/<int:ticket_id>", methods=["GET"])
 def view_ticket(ticket_id):
-    # VULNERABLE: no check that the requester owns this ticket, or is
-    # staff at all, any valid ID returns that ticket's content.
+    # vulnerable: no ownership check, so any valid id returns that ticket.
     ticket = db.session.get(Ticket, ticket_id)
     if ticket is None:
         return "No such ticket", 404
@@ -213,8 +204,7 @@ def diagnostics_form():
 def diagnostics_run():
     host = request.form.get("host", "")
     try:
-        # VULNERABLE: shell=True with unsanitized input lets shell
-        # metacharacters (; && |) chain in a second, arbitrary command.
+        # vulnerable: shell=True with raw input, so ; or && chains a second command.
         result = subprocess.run(
             f"ping -c 1 {host}",
             shell=True,
@@ -237,10 +227,7 @@ def reports():
             "reports.html", files=available, name=None, content=None, error=None
         )
 
-    # VULNERABLE: the requested name is joined straight onto the reports
-    # directory with no normalization or containment check, so a value like
-    # ../staff_only_report.txt escapes the folder and reads any file the
-    # process can open (path traversal / local file disclosure).
+    # vulnerable: name is joined onto the folder with no check, so ../ escapes it.
     path = os.path.join(_REPORTS_DIR, name)
     try:
         with open(path, "r", encoding="utf-8", errors="replace") as f:
@@ -263,10 +250,8 @@ def reports():
 
 @app.route("/staff/console", methods=["GET"])
 def staff_console():
-    # Step two of the chained challenge. Protection here is only a single
-    # shared token in the query string, and that token is already leaked in a
-    # ticket reachable via the ticket IDOR, so a valid ticket ID chains
-    # straight into staff-console access.
+    # vulnerable: only a shared token guards this, and that token is leaked in
+    # a ticket reachable via the IDOR, so the two bugs chain together.
     token = request.args.get("token", "")
     if token != STAFF_CONSOLE_TOKEN:
         return render_template("staff_console.html", authorised=False, flag=None), 403

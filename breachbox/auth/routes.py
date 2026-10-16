@@ -1,19 +1,6 @@
-"""
-Minimal working session-based authentication, using Flask-Login. This is
-genuinely functional, not a stub, since Accounts is listed as required
-tech in the proposal and everything else (submissions, hint unlocks) needs
-a real current_user to attribute actions to. What's NOT built here yet:
-any styling, password reset, or admin-only registration restrictions,
-those are judgement calls for whoever picks this up in a later week.
-
-class_group was dropped from the registration form. The Student model
-still has the column (nullable=False), so every new account gets a
-placeholder value rather than requiring a change to the schema or to
-scoreboard.html, which still displays class_group for existing rows.
-
-Login is rate limited (see breachbox/ratelimit.py) so the portal can't be
-brute-forced during the Week 13 dry-run.
-"""
+"""Session-based register, login and logout with Flask-Login. Login is rate
+limited (see ratelimit.py). The class_group field was dropped from the form,
+so new accounts get a placeholder value for it."""
 
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
@@ -55,8 +42,7 @@ def login():
         display_name = request.form.get("display_name", "").strip()
         password = request.form.get("password", "")
 
-        # Rate limit by IP + display name so repeated wrong guesses get
-        # locked out for a short window, instead of allowing unlimited tries.
+        # Rate limit by IP + name so wrong guesses lock out for a short window.
         limiter_key = f"{request.remote_addr}:{display_name.lower()}"
         allowed, retry_after = login_limiter.check(limiter_key)
         if not allowed:

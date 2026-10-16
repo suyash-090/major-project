@@ -1,7 +1,5 @@
-"""
-Modular challenge-loader. Every vulnerability is a Challenge subclass
-dropped into this folder; discover_challenges() finds them automatically.
-"""
+"""Modular challenge loader. Each vulnerability is a Challenge subclass in this
+folder, and discover_challenges() picks them all up automatically."""
 
 import importlib
 import inspect
@@ -10,8 +8,7 @@ from abc import ABC, abstractmethod
 
 
 class Challenge(ABC):
-    """Base class every vulnerability subclasses. category must be one
-    of VALID_CATEGORIES, matching the Challenge model's column."""
+    """Base class every vulnerability subclasses. category/difficulty must be valid."""
 
     VALID_CATEGORIES = ("Web", "Injection", "Access Control", "Other")
     VALID_DIFFICULTIES = ("Easy", "Medium", "Hard")
@@ -28,8 +25,6 @@ class Challenge(ABC):
 
     @classmethod
     def validate_metadata(cls):
-        # Fails loudly at startup on a bad category/difficulty, instead
-        # of silently breaking the dashboard's filter later.
         if cls.category not in cls.VALID_CATEGORIES:
             raise ValueError(
                 f"{cls.__name__} has invalid category '{cls.category}', "
@@ -43,15 +38,15 @@ class Challenge(ABC):
 
 
 def discover_challenges(package_name: str = "breachbox.challenges"):
-    """Finds every Challenge subclass defined in this package."""
+    """Find every Challenge subclass defined in this package."""
     discovered = []
     package = importlib.import_module(package_name)
 
     for _, module_name, _ in pkgutil.iter_modules(package.__path__):
         if module_name in ("base",):
-            continue  # skip this file itself
+            continue
         if module_name.startswith("_"):
-            continue  # skip placeholder/reference-only modules
+            continue  # skip reference/placeholder files
 
         try:
             module = importlib.import_module(f"{package_name}.{module_name}")
@@ -63,7 +58,7 @@ def discover_challenges(package_name: str = "breachbox.challenges"):
             if not (issubclass(obj, Challenge) and obj is not Challenge):
                 continue
             if obj.__module__ != module.__name__:
-                continue  # imported into this namespace, not defined here
+                continue  # imported in, not defined here
 
             try:
                 obj.validate_metadata()
@@ -77,7 +72,7 @@ def discover_challenges(package_name: str = "breachbox.challenges"):
 
 
 def sync_challenges_to_db():
-    """Creates or updates a Challenge row for every discovered subclass."""
+    """Create or update a Challenge row for every discovered subclass."""
     from breachbox.extensions import db
     from breachbox.models import Challenge
 

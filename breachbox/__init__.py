@@ -10,9 +10,7 @@ def create_app(config_class=Config):
     app = Flask(__name__, instance_relative_config=True, template_folder="../templates", static_folder="../static")
     app.config.from_object(config_class)
 
-    # Flask's instance folder holds things that shouldn't be in version
-    # control, our SQLite file lives here. Create it if it doesn't exist,
-    # since a fresh clone of the repo won't have it yet.
+    # The sqlite file lives here and a fresh clone won't have the folder yet.
     os.makedirs(app.instance_path, exist_ok=True)
 
     db.init_app(app)
@@ -22,9 +20,7 @@ def create_app(config_class=Config):
     def load_user(student_id):
         return db.session.get(Student, int(student_id))
 
-    # Blueprints are registered here, not imported at the top of the file,
-    # because each blueprint module imports `db` from extensions.py, and
-    # importing them before db.init_app(app) has run causes issues.
+    # Imported here rather than at the top to avoid a circular import with db.
     from breachbox.auth import auth_bp
     from breachbox.dashboard import dashboard_bp
     from breachbox.scoreboard import scoreboard_bp
@@ -50,12 +46,8 @@ def create_app(config_class=Config):
 
 
 def _sync_and_print_challenges():
-    """
-    Runs once at startup. Syncs discovered Challenge subclasses into the
-    database, then prints what it found so the team can see, in the
-    terminal, that discovery and syncing actually worked, before anyone
-    builds a real vulnerability on top of it.
-    """
+    # Sync the discovered challenges to the DB and print what we found so we
+    # can see it worked in the terminal at startup.
     from breachbox.challenges.base import sync_challenges_to_db
 
     found = sync_challenges_to_db()
@@ -65,16 +57,8 @@ def _sync_and_print_challenges():
 
 
 def _seed_hints_if_needed():
-    """
-    Runs once at startup, after challenges are synced (so challenge_id
-    lookups by name succeed). One hint ladder per challenge, seeded only
-    if the hint table is empty, so this never overwrites hints a real
-    student has already unlocked. Point costs scale with difficulty,
-    matching the point-penalty design in the proposal.
-
-    These are written as nudges, not answers, on purpose. This is the
-    same database the Week 13 dry-run CTF runs against.
-    """
+    # One hint ladder per challenge. Only seed if the table is empty so we
+    # don't wipe hints a student already unlocked.
     from breachbox.extensions import db
     from breachbox.models import Challenge, Hint
 
