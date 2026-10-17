@@ -6,8 +6,9 @@ The two-zone isolation model as a picture. This is the same setup the
 
 There are two Docker bridge networks, `protected_zone` and
 `vulnerable_zone`, with **no network joining them**. Each app is published
-to the host on its own port, so a learner reaches both from their browser,
-but the two containers have no route to each other.
+to the host on its own port, so a learner reaches both from their browser.
+The two containers are not meant to reach each other; how strictly that is
+enforced depends on the host (see below).
 
 ```mermaid
 flowchart TB
@@ -31,7 +32,7 @@ flowchart TB
     p5000 -->|"5000:5000"| bb
     p5001 -->|"5001:5001"| ta
 
-    bb -. "no shared network, no route between zones" .- ta
+    bb -. "no shared Docker network" .- ta
 
     classDef prot fill:#e6f0ff,stroke:#2b6cb0,color:#1a365d;
     classDef vuln fill:#ffe6e6,stroke:#c53030,color:#742a2a;
@@ -42,13 +43,19 @@ flowchart TB
 The dashed line is **not** a connection, it marks the gap: there is
 deliberately no Docker network between the two zones. `docker-compose.yml`
 puts `breachbox_app` only on `protected_zone` and `target_app` only on
-`vulnerable_zone`, and lists no network they share. Any attempt to connect
-from one zone to the other, by service name or by raw container IP, fails,
-which is what `scripts/isolation_test.py` confirms.
+`vulnerable_zone`, and lists no network they share.
+
+Name-based attempts to connect from one zone to the other fail: neither
+container can resolve the other. Whether a raw-IP attempt also fails depends
+on the host. A native Linux Docker host isolates separate networks by
+default, so the path is blocked; Docker Desktop for Windows does not enforce
+that, so `scripts/isolation_test.py` reports the IP path as reachable there.
+For the live event the two zones should run on a Linux host or on separate
+machines, where the separation holds.
 
 ## The one intended crossing
 
 A student exploits `target_app`, recovers a flag string, and then manually
 submits that string to `breachbox_app` at `/api/submit`. That human step is
 the only designed path between the zones, and it carries a short piece of
-text, not a network connection. Everything else is blocked by design.
+text, not a network connection. Everything else is blocked by i\ÚYÛ‹‚
