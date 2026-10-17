@@ -1,5 +1,3 @@
-version: "3.9"
-
 # This is the two-zone isolation model from the architecture diagram in
 # the proposal. breachbox_app (accounts, scoring, dashboard, hints) sits
 # in protected_zone. target_app (the deliberately vulnerable staff portal)
