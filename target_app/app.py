@@ -92,50 +92,185 @@ def seed_reports():
     # reachable from the viewer by escaping the folder with ../.
     os.makedirs(_REPORTS_DIR, exist_ok=True)
     seed_files = {
-        "weekly_summary.txt": "Weekly staff summary: nothing unusual to report.\nØˆ°(€€€€€€€€‰¥¹¥‘•¹Ñ}±½œ¹ÑáÐˆè€‰%¹¥‘•¹Ð±½œè€À½Á•¸¥¹¥‘•¹ÑÌÑ¡¥ÌÝ••¬¹q¸ˆ°(€€€ô(€€€™½È™¥±•¹…µ”°½¹Ñ•¹ÑÌ¥¸Í••‘}™¥±•Ì¹¥Ñ•µÌ ¤è(€€€€€€€Á…Ñ €ô½Ì¹Á…Ñ ¹©½¥¸¡}IA=IQM}%H°™¥±•¹…µ”¤(€€€€€€€¥˜¹½Ð½Ì¹Á…Ñ ¹•á¥ÍÑÌ¡Á…Ñ ¤è(€€€€€€€€€€€Ý¥Ñ ½Á•¸¡Á…Ñ °€‰Üˆ¤…Ì˜è(€€€€€€€€€€€€€€€˜¹ÝÉ¥Ñ”¡½¹Ñ•¹ÑÌ¤(€€€¥˜¹½Ð½Ì¹Á…Ñ ¹•á¥ÍÑÌ¡}MQ}IA=IQ}1}AQ ¤è(€€€€€€€Ý¥Ñ ½Á•¸¡}MQ}IA=IQ}1}AQ °€‰Üˆ¤…Ì˜è(€€€€€€€€€€€˜¹ÝÉ¥Ñ” (€€€€€€€€€€€€€€€€‰MÑ…™˜µ½¹±äÉ•Á½ÉÐ°¹½Ðµ•…¹ÐÑ¼‰”Í•ÉÙ•‰äÑ¡”Ù¥•Ý•È¹q¸ˆ(€€€€€€€€€€€€€€€˜‰±…œèíAQIYIM1}1õq¸ˆ(€€€€€€€€€€€€¤(()‘•˜Í••‘}ÍÑ…™™}½¹Í½±•}Ñ¥­•Ð ¤è(€€€€ŒAÕÑÌÑ¡”ÍÑ…™˜µ½¹Í½±”Ñ½­•¸¥¸„Ñ¥­•ÐÑ¡…Ð¥Í¸ÐÑ¡”Ù¥•Ý•ÈÌ½Ý¸°(€€€€ŒÍ¼¥ÐÌÉ•…¡…‰±”Ñ¡É½Õ Ñ¡”Ñ¥­•Ð%=H€¡ÍÑ•À½¹”½˜Ñ¡”¡…¥¸¤¸(€€€•á¥ÍÑ¥¹œ€ôQ¥­•Ð¹ÅÕ•Éä¹™¥±Ñ•É}‰ä¡ÍÕ‰©•Ðô‰MÑ…™˜½¹Í½±”…•ÍÌˆ¤¹™¥ÉÍÐ ¤(€€€¥˜•á¥ÍÑ¥¹œ¥Ì9½¹”è(€€€€€€€‘ˆ¹Í•ÍÍ¥½¸¹…‘¡Q¥­•Ð (€€€€€€€€€€€É•ÅÕ•ÍÑ•É}¹…µ”ô‰¥ÑÍÕÁÁ½ÉÐˆ°(€€€€€€€€€€€ÍÕ‰©•Ðô‰MÑ…™˜½¹Í½±”…•ÍÌˆ°(€€€€€€€€€€€‰½‘äô (€€€€€€€€€€€€€€€€‰I•µ¥¹‘•È™½ÈÍÑ…™˜èÑ¡”¥¹Ñ•É¹…°½¹Í½±”Í•ÍÍ¥½¸Ñ½­•¸¥Ì€ˆ(€€€€€€€€€€€€€€€˜‰íMQ}=9M=1}Q=-9ô¸¼¹½ÐÍ¡…É”¥Ð½ÕÑÍ¥‘”Ñ¡”Ñ•…´¸ˆ(€€€€€€€€€€€€¤°(€€€€€€€€¤¤(€€€€€€€‘ˆ¹Í•ÍÍ¥½¸¹½µµ¥Ð ¤(()…ÁÀ¹É½ÕÑ” ˆ¼ˆ¤)‘•˜¥¹‘•à ¤è(€€€É•ÑÕÉ¸É•¹‘•É}Ñ•µÁ±…Ñ” ‰¡½µ”¹¡Ñµ°ˆ¤(()…ÁÀ¹É½ÕÑ” ˆ½±½¥¸ˆ°µ•Ñ¡½‘Ìõl‰P‰t¤)‘•˜±½¥¹}™½É´ ¤è(€€€É•ÑÕÉ¸É•¹‘•É}Ñ•µÁ±…Ñ” ‰±½¥¸¹¡Ñµ°ˆ¤(()…ÁÀ¹É½ÕÑ” ˆ½±½¥¸ˆ°µ•Ñ¡½‘Ìõl‰A=MP‰t¤)‘•˜±½¥¹}ÍÕ‰µ¥Ð ¤è(€€€ÕÍ•É¹…µ”€ôÉ•ÅÕ•ÍÐ¹™½É´¹•Ð ‰ÕÍ•É¹…µ”ˆ°€ˆˆ¤(€€€Á…ÍÍÝ½É€ôÉ•ÅÕ•ÍÐ¹™½É´¹•Ð ‰Á…ÍÍÝ½Éˆ°€ˆˆ¤((€€€€ŒÙÕ±¹•É…‰±”èÉ…Ü˜µÍÑÉ¥¹œME0°Í¼„ÅÕ½Ñ”±¥­”…‘µ¥¸œ=H€œÄœôœÄ‰É•…­Ì½ÕÐ¸(€€€ÅÕ•Éä€ô€ (€€€€€€€˜‰M1P€¨I=4ÍÑ…™™}ÕÍ•ÉÌ]!IÕÍ•É¹…µ”€ô€íÕÍ•É¹…µ•ôœ€ˆ(€€€€€€€˜‰9Á…ÍÍÝ½É€ô€íÁ…ÍÍÝ½É‘ôœˆ(€€€€¤(€€€É•ÍÕ±Ð€ô‘ˆ¹Í•ÍÍ¥½¸¹•á•ÕÑ”¡Ñ•áÐ¡ÅÕ•Éä¤¤¹™•Ñ¡½¹” ¤((€€€¥˜É•ÍÕ±Ðè(€€€€€€€É•ÑÕÉ¸€ (€€€€€€€€€€€˜‰]•±½µ”°íÉ•ÍÕ±Ð¹ÕÍ•É¹…µ•ô„€ˆ(€€€€€€€€€€€˜‰±…œèíME1%}1ô€ˆ(€€€€€€€€€€€€ˆ¡ÍÕ‰µ¥ÐÑ¡¥Ì™±…œ…Ð‰É•…¡‰½á}…ÁÀÌ€½…Á¤½ÍÕ‰µ¥Ð¤ˆ(€€€€€€€€¤((€€€É•ÑÕÉ¸É•¹‘•É}Ñ•µÁ±…Ñ” ‰±½¥¸¹¡Ñµ°ˆ°•ÉÉ½Èô‰%¹Ù…±¥ÕÍ•É¹…µ”½ÈÁ…ÍÍÝ½Éˆ¤°€ÐÀÄ(()…ÁÀ¹É½ÕÑ” ˆ½™••‘‰…¬ˆ°µ•Ñ¡½‘Ìõl‰P‰t¤)‘•˜™••‘‰…¬ ¤è(€€€µ•ÍÍ…”€ôÉ•ÅÕ•ÍÐ¹…ÉÌ¹•Ð ‰µ•ÍÍ…”ˆ°€ˆˆ¤(€€€™±…œ€ôaMM}1¥˜}±½½­Í}±¥­•}Ý½É­¥¹}áÍÍ}Á…å±½…¡µ•ÍÍ…”¤•±Í”ƒNone
+        "weekly_summary.txt": "Weekly staff summary: nothing unusual to report.\n",
+        "incident_log.txt": "Incident log: 0 open incidents this week.\n",
+    }
+    for filename, contents in seed_files.items():
+        path = os.path.join(_REPORTS_DIR, filename)
+        if not os.path.exists(path):
+            with open(path, "w") as f:
+                f.write(contents)
+    if not os.path.exists(_STAFF_REPORT_FLAG_PATH):
+        with open(_STAFF_REPORT_FLAG_PATH, "w") as f:
+            f.write(
+                "Staff-only report, not meant to be served by the viewer.\n"
+                f"Flag: {PTRAVERSAL_FLAG}\n"
+            )
+
+
+def seed_staff_console_ticket():
+    # Puts the staff-console token in a ticket that isn't the viewer's own,
+    # so it's reachable through the ticket IDOR (step one of the chain).
+    existing = Ticket.query.filter_by(subject="Staff console access").first()
+    if existing is None:
+        db.session.add(Ticket(
+            requester_name="itsupport",
+            subject="Staff console access",
+            body=(
+                "Reminder for staff: the internal console session token is "
+                f"{STAFF_CONSOLE_TOKEN}. Do not share it outside the team."
+            ),
+        ))
+        db.session.commit()
+
+
+@app.route("/")
+def index():
+    return render_template("home.html")
+
+
+@app.route("/login", methods=["GET"])
+def login_form():
+    return render_template("login.html")
+
+
+@app.route("/login", methods=["POST"])
+def login_submit():
+    username = request.form.get("username", "")
+    password = request.form.get("password", "")
+
+    # vulnerable: raw f-string SQL, so a quote like admin' OR '1'='1 breaks out.
+    query = (
+        f"SELECT * FROM staff_users WHERE username = '{username}' "
+        f"AND password = '{password}'"
+    )
+    result = db.session.execute(text(query)).fetchone()
+
+    if result:
+        return (
+            f"Welcome, {result.username}! "
+            f"Flag: {SQLI_FLAG} "
+            "(submit this flag at breachbox_app's /api/submit)"
+        )
+
+    return render_template("login.html", error="Invalid username or password"), 401
+
+
+@app.route("/feedback", methods=["GET"])
+def feedback():
+    message = request.args.get("message", "")
+    flag = XSS_FLAG if _looks_like_working_xss_payload(message) else None
     return render_template("feedback.html", message=message, flag=flag)
 
 
-def _looks_like_workin×ÞÜ×Ü^[ØY
-Y\ÜØYÙNˆÝŠHOˆ›ÛÛ‚ˆÈÝ[™È[ˆ›Üˆ™X[œ›ÝÜÙ\ˆ^XÝ][ÛŽÈHXÝX[YÈ\ÈHØY™Hš[\‚ˆÈ[ˆ™YY˜XÚËš[‚ˆÝÙ\™YHY\ÜØYÙK›ÝÙ\Š
-Bˆ™]\›ˆØÜš\ˆ[ˆÝÙ\™YÜˆ›Û™\œ›ÜHˆ[ˆÝÙ\™YÜˆ›Û›ØYHˆ[ˆÝÙ\™Y‚‚\œ›Ý]J‹ÝXÚÙ]ËÛ™]È‹Y]ÙÏVÈ‘ÑU—JB™Yˆ™]×ÝXÚÙ]Ù›Ü›J
-N‚ˆ™]\›ˆ™[™\—Ý[\]J›™]×ÝXÚÙ]š[ŠB‚‚\œ›Ý]J‹ÝXÚÙ]È‹Y]ÙÏVÈ”ÔÕ—JB™YˆÜ™X]WÝXÚÙ]
+def _looks_like_working_xss_payload(message: str) -> bool:
+    # Stands in for real browser execution; the actual bug is the |safe filter
+    # in feedback.html.
+    lowered = message.lower()
+    return "<script" in lowered or "onerror=" in lowered or "onload=" in lowered
 
-N‚ˆ™\]Y\Ý\—Û˜[YHH™\]Y\Ý™›Ü›K™Ù]
-œ™\]Y\Ý\—Û˜[YH‹ˆŠKœÝš\
 
-HÜˆ˜[›Ûž[[Ý\È‚ˆÝXš™XÝH™\]Y\Ý™›Ü›K™Ù]
-œÝXš™XÝ‹ˆŠKœÝš\
+@app.route("/tickets/new", methods=["GET"])
+def new_ticket_form():
+    return render_template("new_ticket.html")
 
-Bˆ›ÙHH™\]Y\Ý™›Ü›K™Ù]
-˜›ÙH‹ˆŠKœÝš\
 
-BˆXÚÙ]HXÚÙ]
-™\]Y\Ý\—Û˜[YO\™\]Y\Ý\—Û˜[YKÝXš™XÝ\ÝXš™XÝ›ÙOX›ÙJBˆ‹œÙ\ÜÚ[Û‹˜Y
-XÚÙ]
-Bˆ‹œÙ\ÜÚ[Û‹˜ÛÛ[Z]
+@app.route("/tickets", methods=["POST"])
+def create_ticket():
+    requester_name = request.form.get("requester_name", "").strip() or "anonymous"
+    subject = request.form.get("subject", "").strip()
+    body = request.form.get("body", "").strip()
+    ticket = Ticket(requester_name=requester_name, subject=subject, body=body)
+    db.session.add(ticket)
+    db.session.commit()
+    return redirect(url_for("view_ticket", ticket_id=ticket.id))
 
-Bˆ™]\›ˆ™Y\™XÝ
-\›Ù›ÜŠšY]×ÝXÚÙ]‹XÚÙ]ÚY]XÚÙ]šY
-JB‚‚\œ›Ý]J‹ÝXÚÙ]ËÏ[XÚÙ]ÚYˆ‹Y]ÙÏVÈ‘ÑU—JB™YˆšY]×ÝXÚÙ]
-XÚÙ]ÚY
-N‚ˆÈ[™\˜X›Nˆ›ÈÝÛ™\œÚ\ÚXÚËÛÈ[žH˜[YY™]\›œÈ]XÚÙ]‚ˆXÚÙ]H‹œÙ\ÜÚ[Û‹™Ù]
-XÚÙ]XÚÙ]ÚY
-BˆYˆXÚÙ]\È›Û™N‚ˆ™]\›ˆ“›ÈÝXÚXÚÙ]‹ˆ™]\›ˆ™[™\—Ý[\]JšY]×ÝXÚÙ]š[‹XÚÙ]]XÚÙ]
-B‚‚\œ›Ý]J‹ÙXYÛ›ÜÝXÜÈ‹Y]ÙÏVÈ‘ÑU—JB™YˆXYÛ›ÜÝXÜ×Ù›Ü›J
-N‚ˆ™]\›ˆ™[™\—Ý[\]J™XYÛ›ÜÝXÜËš[‹Ý]]S›Û™JB‚‚\œ›Ý]J‹ÙXYÛ›ÜÝXÜÈ‹Y]ÙÏVÈ”ÔÕ—JB™YˆXYÛ›ÜÝXÜ×Ü[Š
-N‚ˆÜÝH™\]Y\Ý™›Ü›K™Ù]
-šÜÝ‹ˆŠBˆžN‚ˆÈ[™\˜X›NˆÚ[UYHÚ]˜]È[œ]ÛÈÈÜˆ	‰ˆÚZ[œÈHÙXÛÛ™ÛÛ[X[™‚ˆ™\Ý[HÝXœ›ØÙ\ÜËœ[Šˆˆœ[™ÈXÈHÚÜÝH‹ˆÚ[UYKˆØ\\™WÛÝ]]UYKˆ^UYKˆ[Y[Ý]MKˆ
-BˆÝ]]H™\Ý[œÝÝ]
-È™\Ý[œÝ\œ‚ˆ^Ù\ÝXœ›ØÙ\ÜË•[Y[Ý]^\™Y‚ˆÝ]]HŠÛÛ[X[™[YYÝ]
-H‚ˆ™]\›ˆ™[™\—Ý[\]J™XYÛ›ÜÝXÜËš[‹Ý]][Ý]]
-B‚‚\œ›Ý]J‹Ü™\ÜÈ‹Y]ÙÏVÈ‘ÑU—JB™Yˆ™\ÜÊ
-N‚ˆ]˜Z[X›HHÛÜY
-ÜË›\Ý\ŠÔ‘TÔ•×ÑTŠJHYˆÜËœ]š\Ù\ŠÔ‘TÔ•×ÑTŠH[ÙH×Bˆ˜[YHH™\]Y\Ý˜\™ÜË™Ù]
-›˜[YH‹ˆŠBˆYˆ›Ý˜[YN‚ˆ™]\›ˆ™[™\—Ý[\]Jˆœ™\ÜËš[‹š[\ÏX]˜Z[X›K˜[YOS›Û™KÛÛ[S›Û™K\œ›ÜS›Û™Bˆ
-B‚ˆÈ[™\˜X›Nˆ˜[YH\È›Ú[™YÛÈH›Û\ˆÚ]›ÈÚXÚËÛÈ‹‹È\ØØ\\È]‚ˆ]HÜËœ]š›Ú[ŠÔ‘TÔ•×ÑT‹˜[YJBˆžN‚ˆÚ]Ü[Š]œˆ‹[˜ÛÙ[™ÏH]‹N‹\œ›ÜœÏHœ™\XÙHŠH\ÈŽ‚ˆÛÛ[H‹œ™XY
 
-Bˆ^Ù\
-š[S›Ý›Ý[™\œ›Ü‹\ÐQ\™XÝÜžQ\œ›Ü‹\›Z\ÜÚ[Û‘\œ›Ü‹ÔÑ\œ›ÜŠN‚ˆ™]\›ˆ
-ˆ™[™\—Ý[\]Jˆœ™\ÜËš[‹ˆš[\ÏX]˜Z[X›Kˆ˜[YO[˜[YKˆÛÛ[S›Û™Kˆ\œ›ÜHÛÝ[›Ý™XY]š[Kˆ‹ˆ
-KˆCBÀ¢¢&WGW&â&VæFW%÷FV×ÆFR€¢'&W÷'G2æ‡FÖÂ"Âf–ÆW3Öf–Æ&ÆRÂæÖSÖæÖRÂ6öçFVçCÖ6öçFVçBÂW'&÷#ÔæöæP¢  ¤ç&÷WFR‚"÷7Ffbö6öç6öÆR"ÂÖWF†öG3Õ²$tUB%Ò¦FVb7Ffeö6öç6öÆR‚“ ¢2gVÆæW&&ÆS¢öæÇ’6†&VBFö¶VâwV&G2F†—2ÂæBF†BFö¶Vâ—2ÆV¶VB–à¢2F–6¶WB&V6†&ÆRf–F†R”Dõ"Â6òF†RGvò'Vw26†–âFövWF†W"à¢Fö¶VâÒ&WVW7Bæ&w2ævWB‚'Fö¶Vâ"Â""¢–bFö¶VâÒ5Ddeô4ôå4ôÄUõDô´Tã ¢&WGW&â&VæFW%÷FV×ÆFR‚'7Ffeö6öç6öÆRæ‡FÖÂ"ÂWF†÷&—6VCÔfÇ6RÂfÆsÔæöæR’ÂÐÀÌ(€€€É•ÑÕÉ¸É•¹‘•É}Ñ•µÁ±…Ñ” ‰ÍÑ…™™}½¹Í½±”¹¡Ñµ°ˆ°…ÕÑ¡½É¥Í•õQÉÕ”°™±…œõ!%9}1¤(()Ý¥Ñ …ÁÀ¹…ÁÁ}½¹Ñ•áÐ ¤è(€€€‘ˆ¹É•…Ñ•}…±° ¤(€€€Í••‘}‘Õµµå}ÍÑ…™™}…½Õ¹ÑÌ ¤(€€€Í••‘}…‘µ¥¹}Ñ¥­•Ð ¤(€€€Í••‘}ÍÑ…™™}½¹Í½±•}Ñ¥­•Ð ¤(€€€Í••‘}½ÁÍ}¹½Ñ•Í}™¥±” ¤(€€€Í••‘}É•Á½ÉÑÌ ¤(()¥˜}}¹…µ•}|€ôô€‰}}µ…¥¹}|ˆè(€€€€Œ‘•‰Õœ¥Ì½™˜‰ä‘•™…Õ±Ð¸Q¡¥Ì…ÁÀ¥Ì‘•±¥‰•É…Ñ•±äÙÕ±¹•É…‰±”°Í¼Ñ¡”(€€€€Œ±…ÍÐÑ¡¥¹œÝ”Ý…¹Ð¥Ì±…Í¬Ì¥¹Ñ•É…Ñ¥Ù”‘•‰Õ•È¡…¹¥¹œ½™˜…¸(€€€€ŒÕ¹¡…¹‘±••ÉÉ½È…Ì„‰½¹ÕÌÝ…äÑ¼ÉÕ¸½‘”½¸Ñ¡”¡½ÍÐ¸M•Ð(€€€€ŒQIQ}	UôÄ±½…±±ä½¹±ä¥˜å½ÔÉ•…±±ä¹••¥Ð¸(€€€‘•‰Õœ€ô½Ì¹•¹Ù¥É½¸¹•Ð ‰QIQ}	Uˆ¤€ôô€ˆÄˆ(€€€…ÁÀ¹ÉÕ¸¡¡½ÍÐôˆÀ¸À¸À¸Àˆ°Á½ÉÐôÔÀÀÄ°‘•‰Õœõ‘•‰Õœ¤(
+@app.route("/tickets/<int:ticket_id>", methods=["GET"])
+def view_ticket(ticket_id):
+    # vulnerable: no ownership check, so any valid id returns that ticket.
+    ticket = db.session.get(Ticket, ticket_id)
+    if ticket is None:
+        return "No such ticket", 404
+    return render_template("view_ticket.html", ticket=ticket)
+
+
+@app.route("/diagnostics", methods=["GET"])
+def diagnostics_form():
+    return render_template("diagnostics.html", output=None)
+
+
+@app.route("/diagnostics", methods=["POST"])
+def diagnostics_run():
+    host = request.form.get("host", "")
+    try:
+        # vulnerable: shell=True with raw input, so ; or && chains a second command.
+        result = subprocess.run(
+            f"ping -c 1 {host}",
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        output = result.stdout + result.stderr
+    except subprocess.TimeoutExpired:
+        output = "(command timed out)"
+    return render_template("diagnostics.html", output=output)
+
+
+@app.route("/reports", methods=["GET"])
+def reports():
+    available = sorted(os.listdir(_REPORTS_DIR)) if os.path.isdir(_REPORTS_DIR) else []
+    name = request.args.get("name", "")
+    if not name:
+        return render_template(
+            "reports.html", files=available, name=None, content=None, error=None
+        )
+
+    # vulnerable: name is joined onto the folder with no check, so ../ escapes it.
+    path = os.path.join(_REPORTS_DIR, name)
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            content = f.read()
+    except (FileNotFoundError, IsADirectoryError, PermissionError, OSError):
+        return (
+            render_template(
+                "reports.html",
+                files=available,
+                name=name,
+                content=None,
+                error="Could not read that file.",
+            ),
+            404,
+        )
+    return render_template(
+        "reports.html", files=available, name=name, content=content, error=None
+    )
+
+
+@app.route("/staff/console", methods=["GET"])
+def staff_console():
+    # vulnerable: only a shared token guards this, and that token is leaked in
+    # a ticket reachable via the IDOR, so the two bugs chain together.
+    token = request.args.get("token", "")
+    if token != STAFF_CONSOLE_TOKEN:
+        return render_template("staff_console.html", authorised=False, flag=None), 403
+    return render_template("staff_console.html", authorised=True, flag=CHAINED_FLAG)
+
+
+with app.app_context():
+    db.create_all()
+    seed_dummy_staff_accounts()
+    seed_admin_ticket()
+    seed_staff_console_ticket()
+    seed_ops_notes_file()
+    seed_reports()
+
+
+if __name__ == "__main__":
+    # debug is off by default. This app is deliberately vulnerable, so the
+    # last thing we want is Flask's interactive debugger hanging off an
+    # unhandled error as a bonus way to run code on the host. Set
+    # TARGET_DEBUG=1 locally only if you really need it.
+    debug = os.environ.get("TARGET_DEBUG") == "1"
+    app.run(host="0.0.0.0", port=5001, debug=debug)
