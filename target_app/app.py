@@ -268,4 +268,9 @@ with app.app_context():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    # debug is off by default. This app is deliberately vulnerable, so the
+    # last thing we want is Flask's interactive debugger hanging off an
+    # unhandled error as a bonus way to run code on the host. Set
+    # TARGET_DEBUG=1 locally only if you really need it.
+    debug = os.environ.get("TARGET_DEBUG") == "1"
+    app.run(host="0.0.0.0", port=5001, debug=debug)
