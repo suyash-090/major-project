@@ -58,4 +58,4 @@ machines, where the separation holds.
 A student exploits `target_app`, recovers a flag string, and then manually
 submits that string to `breachbox_app` at `/api/submit`. That human step is
 the only designed path between the zones, and it carries a short piece of
-text, not a network connection. Everything else is blocked by i\ÚYÛ‹‚
+text, not a network connection. Everything else is blocked by design.
