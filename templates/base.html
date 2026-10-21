@@ -11,6 +11,8 @@
 <body>
     <nav class="navbar">
         <span class="brand">breachbox@protected-zone:~$</span>
+        <a href="{{ url_for('index') }}">Home</a>
+        <a href="{{ url_for('learn') }}">Learn</a>
         {% if current_user.is_authenticated %}
             <span>Logged in: {{ current_user.display_name }}</span>
             <a href="{{ url_for('dashboard.home') }}">Dashboard</a>

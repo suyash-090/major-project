@@ -4,6 +4,7 @@ from flask import render_template, request
 from flask_login import login_required, current_user
 
 from breachbox.dashboard import dashboard_bp
+from breachbox.education import for_challenge
 from breachbox.models import Challenge, Hint, HintUnlock, Submission
 
 
@@ -31,6 +32,7 @@ def home():
         )
         challenge_data.append({
             "challenge": challenge,
+            "education": for_challenge(challenge.name),
             "hints": [
                 {"hint": h, "unlocked": h.hint_id in unlocked_hint_ids}
                 for h in hints
