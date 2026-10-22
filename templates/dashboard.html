@@ -20,6 +20,16 @@
     <p>{{ c.description }}</p>
     {% endif %}
 
+    {% if item.education %}
+    {% set e = item.education %}
+    <div class="learn-panel">
+        <p><strong>What you'll learn.</strong> {{ e.learn }}</p>
+        <p><strong>Why it matters.</strong> {{ e.matters }}</p>
+        <p><strong>How to prevent it.</strong> {{ e.prevent }}</p>
+        <p class="owasp">OWASP: <a href="{{ e.owasp_url }}" target="_blank" rel="noopener">{{ e.owasp }}</a></p>
+    </div>
+    {% endif %}
+
     {% if item.hints %}
     <div class="hints">
         {% for h in item.hints %}

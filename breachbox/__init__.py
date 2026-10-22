@@ -37,6 +37,17 @@ def create_app(config_class=Config):
     def index():
         return render_template("home.html")
 
+    @app.route("/learn")
+    def learn():
+        from breachbox.models import Challenge
+        from breachbox.education import for_challenge
+        challenges = Challenge.query.order_by(Challenge.points.asc()).all()
+        items = [
+            {"challenge": c, "education": for_challenge(c.name)}
+            for c in challenges
+        ]
+        return render_template("learn.html", items=items)
+
     with app.app_context():
         db.create_all()
         _sync_and_print_challenges()

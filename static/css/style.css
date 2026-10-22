@@ -261,3 +261,28 @@ td:last-child, th:last-child {
 }
 
 #scoreboardChart { margin-bottom: 24px; }
+
+/* Learning layer: the teaching panel on each challenge, and the Learn page. */
+
+.learn-panel {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  padding: 12px 16px;
+  margin: 12px 0;
+  font-size: 0.9rem;
+}
+
+.learn-panel p { margin: 6px 0; }
+.learn-panel strong { color: var(--accent); font-weight: 600; }
+
+.owasp {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+main ol { padding-left: 20px; }
+main ol li { margin: 6px 0; }

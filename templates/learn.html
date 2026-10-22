@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Learn, BreachBox{% endblock %}
+{% block content %}
+<h1>How BreachBox works</h1>
+<p>BreachBox is a safe practice range for learning web security by doing. You attack a deliberately broken staff site, find the flag each bug hides, and submit it here to score. Everything on the target is fake, and it runs in its own isolated zone, so you can attack freely without touching any real data.</p>
+
+<section>
+    <h2>What you'll learn</h2>
+    <p>The six challenges cover the most common web vulnerabilities, grouped the way the <a href="https://owasp.org/www-project-top-ten/" target="_blank" rel="noopener">OWASP Top 10</a> groups them. For every one, BreachBox doesn't just show you how to break it, it shows you <strong>how to prevent it</strong>, because knowing the fix is the whole point.</p>
+</section>
+
+<section>
+    <h2>How to play</h2>
+    <ol>
+        <li>Pick a challenge on your <a href="{{ url_for('dashboard.home') }}">dashboard</a>.</li>
+        <li>Exploit the bug on the target site to reveal its flag.</li>
+        <li>Copy the flag and submit it here, with a short write-up of how you did it.</li>
+        <li>Stuck? Unlock a hint, but it costs you points.</li>
+        <li>Climb the <a href="{{ url_for('scoreboard.view') }}">scoreboard</a>.</li>
+    </ol>
+</section>
+
+<h2>The challenges</h2>
+{% for item in items %}
+{% set c = item.challenge %}
+<section class="challenge-card">
+    <h3>{{ c.name }}</h3>
+    <p class="challenge-meta">{{ c.category }} &middot; {{ c.difficulty }} &middot; {{ c.points }} pts</p>
+    {% if item.education %}
+    {% set e = item.education %}
+    <p><strong>What you'll learn.</strong> {{ e.learn }}</p>
+    <p><strong>How to prevent it.</strong> {{ e.prevent }}</p>
+    <p class="owasp">OWASP: <a href="{{ e.owasp_url }}" target="_blank" rel="noopener">{{ e.owasp }}</a></p>
+    {% endif %}
+</section>
+{% endfor %}
+
+<section>
+    <h2>Playing fair and safe</h2>
+    <p>These techniques are for learning to defend. Only ever use them on BreachBox or on systems you own or have permission to test. The target app is kept isolated and full of fake data on purpose, so nothing you do here can reach a real person.</p>
+</section>
+{% endblock %}
