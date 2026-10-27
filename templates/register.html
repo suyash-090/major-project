@@ -1,11 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Register, BreachBox{% endblock %}
 {% block content %}
-<h1>Create an account</h1>
-<form method="POST">
-    <label>Display name<input type="text" name="display_name" required></label>
-    <label>Password<input type="password" name="password" required></label>
-    <button type="submit">Register</button>
-</form>
-<p>Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+<div class="auth-card">
+    <p class="eyebrow">// protected zone</p>
+    <h1>Create an account</h1>
+    <form method="POST">
+        <label>Display name<input type="text" name="display_name" autocomplete="username" required></label>
+        <label>Password<input type="password" name="password" autocomplete="new-password" required></label>
+        <button type="submit">Register</button>
+    </form>
+    <p class="auth-alt">Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+</div>
 {% endblock %}
