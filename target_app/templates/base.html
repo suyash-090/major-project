@@ -27,6 +27,12 @@
     </nav>
     <main>
         <p class="warning">&#9888; This is a deliberately vulnerable practice app. Everything here is fake staff data, with no connection to breachbox_app's real student database.</p>
+        <form class="token-bar" method="POST" action="/set-token">
+            <label for="bb-token">BreachBox token</label>
+            <input id="bb-token" type="text" name="token" placeholder="paste your token from the dashboard" value="{{ request.cookies.get('bb_token', '') }}">
+            <button type="submit">Set</button>
+            {% if request.cookies.get('bb_token') %}<span class="token-ok">set &#10003;</span>{% endif %}
+        </form>
         {% block content %}{% endblock %}
     </main>
     <footer class="site-footer">

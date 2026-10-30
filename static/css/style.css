@@ -471,6 +471,40 @@ main ol li { margin: 7px 0; }
 main > ul { padding-left: 22px; }
 main > ul li { margin: 5px 0; }
 
+/* ---------- Personal attack token ---------- */
+
+.token-box {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--points);
+  border-radius: var(--radius);
+  background: var(--panel);
+  padding: 16px 18px;
+  margin: 18px 0 8px;
+}
+.token-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--points);
+  display: block;
+  margin-bottom: 8px;
+}
+.token-box .token {
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--bg-2);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  display: inline-block;
+  letter-spacing: 0.04em;
+  user-select: all;
+}
+.token-help { font-size: 0.86rem; color: var(--text-muted); margin: 10px 0 0; max-width: 64ch; }
+
 /* ---------- Home hero ---------- */
 
 .hero { padding: 8px 0 4px; }

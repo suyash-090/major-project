@@ -1,7 +1,14 @@
+import secrets
 from datetime import datetime
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from breachbox.extensions import db
+
+
+def _new_flag_token():
+    # Short, unique, per-student. Seeds this student's personal flags, so each
+    # student has to perform the hacks themselves instead of sharing a flag.
+    return secrets.token_hex(8)
 
 
 class Student(UserMixin, db.Model):
@@ -12,6 +19,7 @@ class Student(UserMixin, db.Model):
     display_name = db.Column(db.String(80), unique=True, nullable=False)
     class_group = db.Column(db.String(40), nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
+    flag_token = db.Column(db.String(32), unique=True, nullable=False, default=_new_flag_token)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     submissions = db.relationship("Submission", backref="student", lazy=True)

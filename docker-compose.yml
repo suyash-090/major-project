@@ -20,11 +20,18 @@ services:
     environment:
       - SECRET_KEY=dev-only-change-me
       - DATABASE_URL=sqlite:///breachbox.db
+      # Shared with target_app so both derive the same per-student flags. This
+      # is a config value, NOT a network path between the zones. Change it for
+      # a real deployment (and keep both services identical).
+      - FLAG_SECRET=breachbox-dev-flag-secret-change-me
     networks:
       - protected_zone
 
   target_app:
     build: ./target_app
+    environment:
+      # Must match breachbox_app's FLAG_SECRET so the two agree on flags.
+      - FLAG_SECRET=breachbox-dev-flag-secret-change-me
     ports:
       - "5001:5001"  # exposed to the host for convenience during
                       # development only, this port mapping does not

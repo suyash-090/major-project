@@ -91,3 +91,20 @@ def cid(app):
         with app.app_context():
             return Challenge.query.filter_by(name=name).first().challenge_id
     return _cid
+
+
+@pytest.fixture
+def flag_for(app):
+    """The correct flag a given student should capture for a given challenge key.
+
+    Flags are per-student, so a test has to build the right one from the
+    student's own token, exactly the way target_app does.
+    """
+    from breachbox.flags import make_flag
+    from breachbox.models import Student
+
+    def _flag(student_id, key):
+        with app.app_context():
+            token = db.session.get(Student, student_id).flag_token
+        return make_flag(token, key)
+    return _flag
