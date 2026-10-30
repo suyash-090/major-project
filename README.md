@@ -10,7 +10,7 @@ This is the scoring side: accounts, challenges, hints and the scoreboard.
 
 ```
 python3 -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
+source venv/bin/activate        # Windows: venv\\Scripts\\activate
 pip install -r requirements.txt
 python app.py
 ```
@@ -41,6 +41,14 @@ docker compose up --build
 
 breachbox_app runs on the protected_zone network and target_app runs on vulnerable_zone. They don't share a network or a database, which is on purpose. The only intended way across is a person: solve a challenge in target_app, copy the flag, and paste it into breachbox_app at /api/submit. There's a picture of the setup in [docs/network_topology.md](docs/network_topology.md).
 
+## Per-student flags
+
+Flags are unique to each student, so one student can't just hand their flag to a friend. Every account gets a personal token (shown on the dashboard). target_app builds each flag from that token, so the flag you capture is different from everyone else's, and breachbox_app only accepts the flag built from your own token. You have to do each hack yourself.
+
+The two apps never share a database or talk over the network to do this. They only share one secret value, `FLAG_SECRET` (set the same in both, through the environment in docker-compose.yml), and each app derives the same flags from it on its own, using HMAC. So the two zones stay fully separate, exactly as before.
+
+To play through BreachBox: copy your token from your dashboard, paste it into the "BreachBox token" box at the top of target_app, then do the challenges. The flags you capture will be yours.
+
 ## Running the tests
 
 We wrote automated tests for the main logic: the flag checking, the challenge loader, the scoreboard maths, the submit API, the rate limiting and the planning part of the isolation test.
@@ -50,7 +58,7 @@ pip install -r requirements.txt -r requirements-dev.txt
 pytest
 ```
 
-There are 59 of them and they all sit in the tests/ folder. Each test builds its own throwaway database, so they never touch your real one and don't rely on each other.
+There are 61 of them and they all sit in the tests/ folder. Each test builds its own throwaway database, so they never touch your real one and don't rely on each other.
 
 ## Checking the zones are isolated
 
@@ -93,3 +101,6 @@ Week 12, the hardening pass:
 - scripts/isolation_test.py, Suyash's automated isolation test, plus unit tests for its planning logic (#22, from #19). It also covers the second job above, since it checks every path between the zones, including the published ports
 - docs/network_topology.md, the topology diagram showing the two zones and their ports (#22)
 - we left internal: true out in the end. BreachBox runs on one server that students reach from their laptops, and putting target_app on an internal network would stop them getting to it at all
+
+Since the prototype feedback:
+- Per-student flags (see the section above): each student now gets a unique flag for every challenge, so flags can't be shared between students. It uses a shared `FLAG_SECRET` and HMAC, so the two zones still never share a database or a network path. This answers the marker's note that the standard flag strings could be passed around.

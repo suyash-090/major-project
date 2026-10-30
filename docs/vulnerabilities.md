@@ -8,6 +8,21 @@ actually exploit each bug, not just read the answer here.
 
 ---
 
+## How flags work (per-student)
+
+Flags are not fixed strings. Each student has a personal token, and every
+flag is derived as `HMAC-SHA256(FLAG_SECRET, "<token>:<challenge-key>")`,
+truncated and wrapped as `flag{<key>_<digest>}`. `target_app` builds the flag
+from the token the student has set (stored in a cookie), and `breachbox_app`
+recomputes the expected flag from that student's stored token when they
+submit. Because the two apps only share `FLAG_SECRET` (a config value, not a
+network link or a shared database), they always agree on a student's flags
+without ever talking to each other. So a flag one student captures is useless
+to anyone else, and each student has to exploit every bug themselves. The
+challenge keys are `sqli`, `xss`, `idor`, `cmdi`, `ptraversal` and `chained`.
+
+---
+
 ## 1. SQL Injection: Staff Portal Login Bypass
 
 - **Where:** `target_app/app.py`, `POST /login`
@@ -113,7 +128,7 @@ attacker-chosen command, against a file that isn't linked anywhere in
 the app's UI.
 
 **Why it's exploitable:** `shell=True` hands the whole string to a
-real shell interpreter, so any shell metacharacter (`; && | \` $( ) `)
+real shell interpreter, so any shell metacharacter (`; && | \\` $( ) `)
 in user input can inject additional commands. This is a strictly
 worse version of the SQLi bug, arbitrary OS commands instead of
 arbitrary SQL.
