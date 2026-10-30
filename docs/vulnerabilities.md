@@ -128,7 +128,7 @@ attacker-chosen command, against a file that isn't linked anywhere in
 the app's UI.
 
 **Why it's exploitable:** `shell=True` hands the whole string to a
-real shell interpreter, so any shell metacharacter (`; && | \\` $( ) `)
+real shell interpreter, so any shell metacharacter (`; && | \` $( ) `)
 in user input can inject additional commands. This is a strictly
 worse version of the SQLi bug, arbitrary OS commands instead of
 arbitrary SQL.
