@@ -4,6 +4,8 @@ separate Flask app and database from breachbox_app. Vulnerabilities: SQLi
 (/diagnostics), path traversal (/reports) and a chained IDOR to staff
 console (/staff/console)."""
 
+import hashlib
+import hmac
 import os
 import subprocess
 from flask import Flask, render_template, request, redirect, url_for
@@ -25,13 +27,45 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
-# Plaintext flags. breachbox only ever stores the hash of each.
-SQLI_FLAG = "flag{sql1_st4ff_p0rt4l_byp4ss_2026}"
-XSS_FLAG = "flag{r3fl3ct3d_xss_st4ff_f33db4ck_2026}"
-IDOR_FLAG = "flag{1d0r_t1ck3t_3num3r4t10n_2026}"
-CMDI_FLAG = "flag{cmd1_p1ng_ut1l1ty_1nj3ct10n_2026}"
-PTRAVERSAL_FLAG = "flag{p4th_tr4v3rs4l_r3p0rt_v13w3r_2026}"
-CHAINED_FLAG = "flag{ch41n3d_1d0r_t0_st4ff_c0ns0l3_2026}"
+# Per-student flags. The strings below are PLACEHOLDERS; personalise_flags()
+# swaps each one for a flag unique to the attacking student just before the
+# response leaves this app. So a flag one student captures can never be shared
+# with another: breachbox_app only accepts the flag built from that student's
+# own token.
+SQLI_FLAG = "__FLAG_SQLI__"
+XSS_FLAG = "__FLAG_XSS__"
+IDOR_FLAG = "__FLAG_IDOR__"
+CMDI_FLAG = "__FLAG_CMDI__"
+PTRAVERSAL_FLAG = "__FLAG_PTRAVERSAL__"
+CHAINED_FLAG = "__FLAG_CHAINED__"
+
+# Shared with breachbox_app through config only (no network link, no shared
+# database), so both sides derive the same per-student flags. Same default as
+# breachbox/flags.py; set FLAG_SECRET in the environment for a real deploy.
+FLAG_SECRET = os.environ.get("FLAG_SECRET", "breachbox-dev-flag-secret-change-me")
+
+_FLAG_PLACEHOLDERS = {
+    "__FLAG_SQLI__": "sqli",
+    "__FLAG_XSS__": "xss",
+    "__FLAG_IDOR__": "idor",
+    "__FLAG_CMDI__": "cmdi",
+    "__FLAG_PTRAVERSAL__": "ptraversal",
+    "__FLAG_CHAINED__": "chained",
+}
+
+
+def make_flag(token, key):
+    digest = hmac.new(
+        FLAG_SECRET.encode(), f"{token}:{key}".encode(), hashlib.sha256
+    ).hexdigest()[:16]
+    return f"flag{{{key}_{digest}}}"
+
+
+def _current_token():
+    # The student pastes their BreachBox token into the box in the nav, which
+    # sets this cookie. With no token set we fall back to a fixed "anon" flag,
+    # so the app still works on its own for testing.
+    return request.cookies.get("bb_token") or "anon"
 
 # Leaked on purpose inside a staff ticket, which is the chained challenge:
 # read the ticket through the IDOR, then reuse the token at /staff/console.
@@ -65,26 +99,30 @@ def seed_dummy_staff_accounts():
 
 
 def seed_admin_ticket():
-    if Ticket.query.count() == 0:
+    body = (
+        "Internal note, staff eyes only: rotate the staff portal "
+        "credentials after last week's incident review. "
+        f"Flag: {IDOR_FLAG}"
+    )
+    existing = Ticket.query.filter_by(subject="Password rotation reminder").first()
+    if existing is None:
         db.session.add(Ticket(
             requester_name="admin",
             subject="Password rotation reminder",
-            body=(
-                "Internal note, staff eyes only: rotate the staff portal "
-                "credentials after last week's incident review. "
-                f"Flag: {IDOR_FLAG}"
-            ),
+            body=body,
         ))
-        db.session.commit()
+    else:
+        existing.body = body  # keep the placeholder current on an old database
+    db.session.commit()
 
 
 def seed_ops_notes_file():
-    if not os.path.exists(_OPS_NOTES_PATH):
-        with open(_OPS_NOTES_PATH, "w") as f:
-            f.write(
-                "Internal ops notes, not linked from the site anywhere.\n"
-                f"Flag: {CMDI_FLAG}\n"
-            )
+    # Always rewrite so the placeholder flag stays current, even on an old checkout.
+    with open(_OPS_NOTES_PATH, "w") as f:
+        f.write(
+            "Internal ops notes, not linked from the site anywhere.\n"
+            f"Flag: {CMDI_FLAG}\n"
+        )
 
 
 def seed_reports():
@@ -100,12 +138,12 @@ def seed_reports():
         if not os.path.exists(path):
             with open(path, "w") as f:
                 f.write(contents)
-    if not os.path.exists(_STAFF_REPORT_FLAG_PATH):
-        with open(_STAFF_REPORT_FLAG_PATH, "w") as f:
-            f.write(
-                "Staff-only report, not meant to be served by the viewer.\n"
-                f"Flag: {PTRAVERSAL_FLAG}\n"
-            )
+    # Always rewrite the flag file so the placeholder stays current.
+    with open(_STAFF_REPORT_FLAG_PATH, "w") as f:
+        f.write(
+            "Staff-only report, not meant to be served by the viewer.\n"
+            f"Flag: {PTRAVERSAL_FLAG}\n"
+        )
 
 
 def seed_staff_console_ticket():
@@ -256,6 +294,40 @@ def staff_console():
     if token != STAFF_CONSOLE_TOKEN:
         return render_template("staff_console.html", authorised=False, flag=None), 403
     return render_template("staff_console.html", authorised=True, flag=CHAINED_FLAG)
+
+
+@app.route("/set-token", methods=["POST"])
+def set_token():
+    # Store the student's BreachBox token in a cookie so their captured flags
+    # are built from it. This is only a personalisation seed, not a login.
+    token = request.form.get("token", "").strip()[:64]
+    response = redirect(request.referrer or url_for("index"))
+    if token:
+        response.set_cookie("bb_token", token, max_age=60 * 60 * 24 * 30, samesite="Lax")
+    else:
+        response.delete_cookie("bb_token")
+    return response
+
+
+@app.after_request
+def personalise_flags(response):
+    # Swap each flag placeholder for one unique to the attacking student,
+    # wherever it turns up in a text response: a page, a file read through the
+    # report viewer, or the output of an injected shell command.
+    if response.direct_passthrough:
+        return response
+    ctype = response.content_type or ""
+    if "text/" not in ctype and "application/json" not in ctype:
+        return response
+    body = response.get_data(as_text=True)
+    if "__FLAG_" not in body:
+        return response
+    token = _current_token()
+    for placeholder, key in _FLAG_PLACEHOLDERS.items():
+        if placeholder in body:
+            body = body.replace(placeholder, make_flag(token, key))
+    response.set_data(body)
+    return response
 
 
 with app.app_context():

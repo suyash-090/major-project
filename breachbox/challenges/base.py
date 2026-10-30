@@ -1,27 +1,37 @@
 """Modular challenge loader. Each vulnerability is a Challenge subclass in this
 folder, and discover_challenges() picks them all up automatically."""
 
+import hmac
 import importlib
 import inspect
 import pkgutil
-from abc import ABC, abstractmethod
+from abc import ABC
 
 
 class Challenge(ABC):
-    """Base class every vulnerability subclasses. category/difficulty must be valid."""
+    """Base class every vulnerability subclasses. category/difficulty/key must be valid."""
 
     VALID_CATEGORIES = ("Web", "Injection", "Access Control", "Other")
     VALID_DIFFICULTIES = ("Easy", "Medium", "Hard")
 
     name: str = "Unnamed Challenge"
+    key: str = ""  # stable id used to derive this challenge's per-student flag
     category: str = "Other"
     difficulty: str = "Easy"
     points: int = 0
     description: str = ""
 
-    @abstractmethod
-    def check_solution(self, submitted_flag: str) -> bool:
-        raise NotImplementedError
+    def check_solution(self, submitted_flag: str, token: str) -> bool:
+        """True if the flag is the one THIS student should have captured.
+
+        Flags are per-student: we recompute the expected flag from the
+        student's own token and this challenge's key, so a flag captured by
+        another student (built from a different token) never validates here.
+        """
+        from breachbox.flags import make_flag
+
+        expected = make_flag(token, self.key)
+        return hmac.compare_digest(submitted_flag.strip(), expected)
 
     @classmethod
     def validate_metadata(cls):
@@ -35,6 +45,8 @@ class Challenge(ABC):
                 f"{cls.__name__} has invalid difficulty '{cls.difficulty}', "
                 f"must be one of {cls.VALID_DIFFICULTIES}"
             )
+        if not cls.key:
+            raise ValueError(f"{cls.__name__} is missing a 'key' for its flag")
 
 
 def discover_challenges(package_name: str = "breachbox.challenges"):
@@ -87,7 +99,7 @@ def sync_challenges_to_db():
                 difficulty=cls.difficulty,
                 points=cls.points,
                 description=cls.description,
-                flag_hash="managed_by_challenge_class",
+                flag_hash="per_student_hmac",
             )
             db.session.add(row)
         else:

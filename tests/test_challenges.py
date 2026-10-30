@@ -1,29 +1,30 @@
 """
-Challenge discovery and flag-checking tests. These are pure logic: no app,
-no database, no network, so they run fast and in isolation.
+Challenge discovery and flag-checking tests. Pure logic: no app, no database,
+no network, so they run fast and in isolation.
 
-The plaintext flags below are the real ones. They live in target_app on
-purpose (this is a deliberately vulnerable teaching target), so repeating them
-here is not a leak, and it lets these tests double as a cross-check that the
-scoring side (breachbox) and the vulnerable side (target_app) agree on every
-flag: a challenge only "passes" if hashing its real flag matches the hash the
-challenge class stores.
+Flags are per-student now: each one is HMAC(FLAG_SECRET, "<token>:<key>"), so
+these tests build the expected flag for a sample token with the same helper
+the app uses (make_flag), then check that the challenge accepts it, rejects a
+wrong one, and rejects a flag meant for a different challenge or a different
+student. That last check is the anti-sharing guarantee at the unit level.
 """
 
 import pytest
 
 from breachbox.challenges.base import Challenge, discover_challenges
+from breachbox.flags import make_flag
 
-CORRECT_FLAGS = {
-    "Staff Portal Login Bypass": "flag{sql1_st4ff_p0rt4l_byp4ss_2026}",
-    "Staff Feedback Reflected XSS": "flag{r3fl3ct3d_xss_st4ff_f33db4ck_2026}",
-    "Support Ticket IDOR": "flag{1d0r_t1ck3t_3num3r4t10n_2026}",
-    "Diagnostics Command Injection": "flag{cmd1_p1ng_ut1l1ty_1nj3ct10n_2026}",
-    "Report Viewer Path Traversal": "flag{p4th_tr4v3rs4l_r3p0rt_v13w3r_2026}",
-    "Chained: Ticket Leak to Staff Console": "flag{ch41n3d_1d0r_t0_st4ff_c0ns0l3_2026}",
-}
+CHALLENGE_NAMES = [
+    "Staff Portal Login Bypass",
+    "Staff Feedback Reflected XSS",
+    "Support Ticket IDOR",
+    "Diagnostics Command Injection",
+    "Report Viewer Path Traversal",
+    "Chained: Ticket Leak to Staff Console",
+]
 
-CHALLENGE_NAMES = list(CORRECT_FLAGS)
+# A stand-in for one student's personal token.
+TOKEN = "testtoken1234567"
 
 
 def _by_name():
@@ -31,7 +32,7 @@ def _by_name():
 
 
 def test_discovers_exactly_the_six_live_challenges():
-    assert set(_by_name()) == set(CORRECT_FLAGS)
+    assert set(_by_name()) == set(CHALLENGE_NAMES)
 
 
 def test_placeholder_and_reference_modules_are_not_discovered():
@@ -44,41 +45,56 @@ def test_placeholder_and_reference_modules_are_not_discovered():
 
 @pytest.mark.parametrize("name", CHALLENGE_NAMES)
 def test_correct_flag_is_accepted(name):
-    assert _by_name()[name]().check_solution(CORRECT_FLAGS[name]) is True
+    cls = _by_name()[name]
+    flag = make_flag(TOKEN, cls.key)
+    assert cls().check_solution(flag, TOKEN) is True
 
 
 @pytest.mark.parametrize("name", CHALLENGE_NAMES)
 def test_surrounding_whitespace_is_tolerated(name):
-    padded = "  " + CORRECT_FLAGS[name] + "\n"
-    assert _by_name()[name]().check_solution(padded) is True
+    cls = _by_name()[name]
+    padded = "  " + make_flag(TOKEN, cls.key) + "\n"
+    assert cls().check_solution(padded, TOKEN) is True
 
 
 @pytest.mark.parametrize("name", CHALLENGE_NAMES)
 def test_wrong_or_empty_flag_is_rejected(name):
     challenge = _by_name()[name]()
-    assert challenge.check_solution("flag{definitely_not_it}") is False
-    assert challenge.check_solution("") is False
+    assert challenge.check_solution("flag{definitely_not_it}", TOKEN) is False
+    assert challenge.check_solution("", TOKEN) is False
 
 
 @pytest.mark.parametrize("name", CHALLENGE_NAMES)
 def test_flag_check_is_case_sensitive(name):
-    assert _by_name()[name]().check_solution(CORRECT_FLAGS[name].upper()) is False
+    cls = _by_name()[name]
+    flag = make_flag(TOKEN, cls.key)
+    assert cls().check_solution(flag.upper(), TOKEN) is False
 
 
 def test_each_flag_only_solves_its_own_challenge():
     classes = _by_name()
-    for name, challenge_cls in classes.items():
-        for other_name, other_flag in CORRECT_FLAGS.items():
+    for name, cls in classes.items():
+        for other_name, other_cls in classes.items():
             if other_name == name:
                 continue
-            assert challenge_cls().check_solution(other_flag) is False, (
+            other_flag = make_flag(TOKEN, other_cls.key)
+            assert cls().check_solution(other_flag, TOKEN) is False, (
                 f"{other_name!r} flag wrongly solved {name!r}"
             )
 
 
+def test_a_flag_from_another_token_is_rejected():
+    # Anti-sharing at the unit level: a flag built from a different student's
+    # token never validates, even for the right challenge.
+    cls = _by_name()["Staff Portal Login Bypass"]
+    someone_elses_flag = make_flag("a-different-students-token", cls.key)
+    assert cls().check_solution(someone_elses_flag, TOKEN) is False
+
+
 def test_every_challenge_has_valid_metadata():
     for cls in discover_challenges():
-        cls.validate_metadata()  # raises ValueError on a bad category/difficulty
+        cls.validate_metadata()  # raises ValueError on bad category/difficulty/key
         assert cls.points > 0
         assert cls.category in Challenge.VALID_CATEGORIES
         assert cls.difficulty in Challenge.VALID_DIFFICULTIES
+        assert cls.key  # per-student flags need a stable key

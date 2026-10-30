@@ -135,6 +135,27 @@ h1 + p { color: var(--text-muted); max-width: 62ch; }
 
 .error { color: var(--danger); font-size: 0.9rem; }
 
+/* ---------- BreachBox token bar ---------- */
+
+.token-bar {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  margin: 0 0 24px;
+  padding: 10px 14px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+.token-bar label { color: var(--text-muted); font-weight: 600; }
+.token-bar input { flex: 1 1 200px; min-width: 180px; max-width: 360px; }
+.token-bar button { padding: 8px 14px; }
+.token-ok { color: var(--accent); font-weight: 600; }
+
 /* ---------- Cards ---------- */
 
 section {
