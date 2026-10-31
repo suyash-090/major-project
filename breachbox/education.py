@@ -19,6 +19,13 @@ EDUCATION = {
         "matters": "XSS lets an attacker run code in another user's browser, steal their login session, change what they see, or trick them into actions they never meant to take.",
         "prevent": "Escape and encode all user input when it goes into a page, and let the template auto-escape it (never mark it 'safe'). Add a Content-Security-Policy header.",
     },
+    "Staff Noticeboard Stored XSS": {
+        "owasp": "A03:2021 - Injection (Cross-Site Scripting)",
+        "owasp_url": "https://owasp.org/Top10/2021/A03_2021-Injection/",
+        "learn": "How stored XSS works: when a page saves your input and later shows it to other people without escaping it, your script runs in their browsers, not just your own.",
+        "matters": "Stored XSS is the more dangerous kind of XSS: the payload is saved once and then fires for every visitor who loads the page, so a single post can hit a whole site's users, staff and admins included.",
+        "prevent": "Escape user input when it is shown on a page and let the template auto-escape it (never mark it 'safe'). Validate input on the way in as well, and add a Content-Security-Policy header so injected scripts can't run.",
+    },
     "Support Ticket IDOR": {
         "owasp": "A01:2021 - Broken Access Control",
         "owasp_url": "https://owasp.org/Top10/2021/A01_2021-Broken_Access_Control/",

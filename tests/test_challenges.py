@@ -17,6 +17,7 @@ from breachbox.flags import make_flag
 CHALLENGE_NAMES = [
     "Staff Portal Login Bypass",
     "Staff Feedback Reflected XSS",
+    "Staff Noticeboard Stored XSS",
     "Support Ticket IDOR",
     "Diagnostics Command Injection",
     "Report Viewer Path Traversal",
@@ -31,7 +32,7 @@ def _by_name():
     return {cls.name: cls for cls in discover_challenges()}
 
 
-def test_discovers_exactly_the_six_live_challenges():
+def test_discovers_exactly_the_seven_live_challenges():
     assert set(_by_name()) == set(CHALLENGE_NAMES)
 
 

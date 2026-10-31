@@ -111,6 +111,13 @@ def _seed_hints_if_needed():
             (1, "Check how the message query parameter gets rendered on "
                 "the page. Does anything strip or escape HTML tags in it?", 20),
         ],
+        "Staff Noticeboard Stored XSS": [
+            (1, "Post a note, then look at how the board shows it back. Are "
+                "your HTML tags kept as-is instead of being escaped?", 20),
+            (2, "A note you post is saved and then shown to everyone who opens "
+                "the board. Put a <script> tag (or an onerror= handler) in the "
+                "note body and reload the board.", 40),
+        ],
         "Support Ticket IDOR": [
             (1, "After you submit your own ticket, look closely at the ID "
                 "in the URL. What happens if you try a smaller number?", 25),

@@ -64,7 +64,7 @@ pip install -r requirements.txt -r requirements-dev.txt
 pytest
 ```
 
-There are 68 of them and they all sit in the tests/ folder. Each test builds its own throwaway database, so they never touch your real one and don't rely on each other.
+There are 72 of them and they all sit in the tests/ folder. Each test builds its own throwaway database, so they never touch your real one and don't rely on each other.
 
 ## Checking the zones are isolated
 
@@ -110,3 +110,5 @@ Week 12, the hardening pass:
 
 Since the prototype feedback:
 - Per-student flags (see the section above): each student now gets a unique flag for every challenge, so flags can't be shared between students. It uses a shared `FLAG_SECRET` and HMAC, so the two zones still never share a database or a network path. This answers the marker's note that the standard flag strings could be passed around.
+- A teacher/admin area (see the section above) so a marker can watch over every student's tokens and flags, adjust points and edit the challenge wording.
+- A seventh challenge, stored (persistent) XSS on target_app's `/noticeboard`: a note you post is saved and then rendered to everyone who views the board, so the payload runs for every visitor, not just you. It's the saved-to-the-page counterpart of the existing reflected XSS.
