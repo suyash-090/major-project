@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Staff Noticeboard{% endblock %}
+{% block content %}
+<h1>Staff Noticeboard</h1>
+<p>Post a short note for the rest of the team. Everyone who opens this page sees the board below.</p>
+
+{% if flag %}
+<p class="flag-banner"><strong>Flag:</strong> {{ flag }} (submit this flag at breachbox_app's /api/submit)</p>
+{% endif %}
+
+<form method="POST" action="/noticeboard">
+    <label>Your name<input type="text" name="author"></label>
+    <label>Note<textarea name="body" rows="3"></textarea></label>
+    <button type="submit">Post note</button>
+</form>
+
+<h2>Notes</h2>
+<div id="noticeboard">
+    {% for note in notes %}
+    <div class="note">
+        <span class="note-author">{{ note.author }}</span>
+        <div class="note-body">{{ note.body|safe }}</div>
+    </div>
+    {% else %}
+    <p>No notes yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}
