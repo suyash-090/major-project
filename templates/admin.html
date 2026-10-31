@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Admin, BreachBox{% endblock %}
+{% block content %}
+<h1>Admin</h1>
+<p>Teacher view. Everything here is admin-only &mdash; students can't reach it.</p>
+
+<h2>Students</h2>
+<table>
+    <thead>
+        <tr><th>Student</th><th>Class</th><th>Token</th><th>Solved</th><th>Score</th></tr>
+    </thead>
+    <tbody>
+        {% for r in rows %}
+        <tr>
+            <td><a href="{{ url_for('admin.student_detail', student_id=r.student.student_id) }}">{{ r.student.display_name }}</a></td>
+            <td>{{ r.student.class_group }}</td>
+            <td><code class="admin-token">{{ r.student.flag_token }}</code></td>
+            <td>{{ r.solved }} / {{ challenges|length }}</td>
+            <td>{{ r.score }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">No students yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Challenge descriptions</h2>
+<p>Edit what students see on their dashboard and the Learn page. Your wording is kept even when the app restarts.</p>
+{% for c in challenges %}
+<section class="challenge-card">
+    <h3>{{ c.name }}</h3>
+    <p class="challenge-meta">
+        <span class="badge badge-cat">{{ c.category }}</span>
+        <span class="badge">{{ c.difficulty }}</span>
+        <span class="badge badge-points">{{ c.points }} pts</span>
+    </p>
+    <form class="admin-edit" method="POST" action="{{ url_for('admin.edit_challenge', challenge_id=c.challenge_id) }}">
+        <label>Description
+            <textarea name="description" rows="3">{{ c.description or '' }}</textarea>
+        </label>
+        <button type="submit">Save description</button>
+    </form>
+</section>
+{% endfor %}
+{% endblock %}

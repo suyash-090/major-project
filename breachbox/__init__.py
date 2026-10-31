@@ -26,12 +26,14 @@ def create_app(config_class=Config):
     from breachbox.scoreboard import scoreboard_bp
     from breachbox.hints import hints_bp
     from breachbox.submissions import submissions_bp
+    from breachbox.admin import admin_bp
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(dashboard_bp, url_prefix="/dashboard")
     app.register_blueprint(scoreboard_bp, url_prefix="/scoreboard")
     app.register_blueprint(hints_bp, url_prefix="/hints")
     app.register_blueprint(submissions_bp, url_prefix="/api")
+    app.register_blueprint(admin_bp, url_prefix="/admin")
 
     @app.route("/")
     def index():
@@ -52,8 +54,32 @@ def create_app(config_class=Config):
         db.create_all()
         _sync_and_print_challenges()
         _seed_hints_if_needed()
+        _seed_admin_if_needed()
 
     return app
+
+
+def _seed_admin_if_needed():
+    # One teacher/admin account so the admin area is reachable out of the box.
+    # The password comes from ADMIN_PASSWORD (set it for a real deployment);
+    # the default is only meant for local use.
+    from breachbox.extensions import db
+    from breachbox.models import Student
+
+    if Student.query.filter_by(is_admin=True).first():
+        return
+
+    name = os.environ.get("ADMIN_NAME", "teacher")
+    password = os.environ.get("ADMIN_PASSWORD", "breachbox-teacher")
+
+    if Student.query.filter_by(display_name=name).first():
+        return  # a normal student already has that name, don't clobber it
+
+    admin = Student(display_name=name, class_group="staff", is_admin=True)
+    admin.set_password(password)
+    db.session.add(admin)
+    db.session.commit()
+    print(f"[BreachBox] Seeded admin account '{name}'. Set ADMIN_PASSWORD to change its password.")
 
 
 def _sync_and_print_challenges():
