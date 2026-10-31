@@ -24,6 +24,8 @@ services:
       # is a config value, NOT a network path between the zones. Change it for
       # a real deployment (and keep both services identical).
       - FLAG_SECRET=breachbox-dev-flag-secret-change-me
+      # The seeded teacher/admin account's password. Change it for a real deployment.
+      - ADMIN_PASSWORD=breachbox-teacher
     networks:
       - protected_zone
 

@@ -106,7 +106,8 @@ def sync_challenges_to_db():
             row.category = cls.category
             row.difficulty = cls.difficulty
             row.points = cls.points
-            row.description = cls.description
+            # description is intentionally NOT overwritten here: a teacher can
+            # edit it in the admin area, and startup must not wipe that edit.
 
     db.session.commit()
     return discovered

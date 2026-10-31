@@ -49,6 +49,12 @@ The two apps never share a database or talk over the network to do this. They on
 
 To play through BreachBox: copy your token from your dashboard, paste it into the "BreachBox token" box at the top of target_app, then do the challenges. The flags you capture will be yours.
 
+## Teacher / admin area
+
+There's a separate admin area at `/admin`, reachable only by a teacher account (a student who guesses the URL gets a 403, not the page). From there a teacher can see every student's token and their per-student flags, read their write-ups, dock or award points (each change is kept as a record, so the scoreboard stays auditable), and edit the challenge descriptions students see.
+
+The app seeds one admin account, `teacher`, on first run. Set its password with the `ADMIN_PASSWORD` environment variable; the built-in default is only meant for local use.
+
 ## Running the tests
 
 We wrote automated tests for the main logic: the flag checking, the challenge loader, the scoreboard maths, the submit API, the rate limiting and the planning part of the isolation test.
@@ -58,7 +64,7 @@ pip install -r requirements.txt -r requirements-dev.txt
 pytest
 ```
 
-There are 61 of them and they all sit in the tests/ folder. Each test builds its own throwaway database, so they never touch your real one and don't rely on each other.
+There are 68 of them and they all sit in the tests/ folder. Each test builds its own throwaway database, so they never touch your real one and don't rely on each other.
 
 ## Checking the zones are isolated
 
