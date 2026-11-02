@@ -25,6 +25,7 @@ FLAG_SECRET = os.environ.get("FLAG_SECRET", "breachbox-dev-flag-secret-change-me
 CHALLENGE_KEYS = {
     "Staff Portal Login Bypass": "sqli",
     "Staff Feedback Reflected XSS": "xss",
+    "Staff Noticeboard Stored XSS": "sxss",
     "Support Ticket IDOR": "idor",
     "Diagnostics Command Injection": "cmdi",
     "Report Viewer Path Traversal": "ptraversal",

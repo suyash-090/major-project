@@ -49,6 +49,12 @@ The two apps never share a database or talk over the network to do this. They on
 
 To play through BreachBox: copy your token from your dashboard, paste it into the "BreachBox token" box at the top of target_app, then do the challenges. The flags you capture will be yours.
 
+## Teacher / admin area
+
+There's a separate admin area at `/admin`, reachable only by a teacher account (a student who guesses the URL gets a 403, not the page). From there a teacher can see every student's token and their per-student flags, read their write-ups, dock or award points (each change is kept as a record, so the scoreboard stays auditable), and edit the challenge descriptions students see.
+
+The app seeds one admin account, `teacher`, on first run. Set its password with the `ADMIN_PASSWORD` environment variable; the built-in default is only meant for local use.
+
 ## Running the tests
 
 We wrote automated tests for the main logic: the flag checking, the challenge loader, the scoreboard maths, the submit API, the rate limiting and the planning part of the isolation test.
@@ -58,7 +64,7 @@ pip install -r requirements.txt -r requirements-dev.txt
 pytest
 ```
 
-There are 61 of them and they all sit in the tests/ folder. Each test builds its own throwaway database, so they never touch your real one and don't rely on each other.
+There are 72 of them and they all sit in the tests/ folder. Each test builds its own throwaway database, so they never touch your real one and don't rely on each other.
 
 ## Checking the zones are isolated
 
@@ -104,3 +110,5 @@ Week 12, the hardening pass:
 
 Since the prototype feedback:
 - Per-student flags (see the section above): each student now gets a unique flag for every challenge, so flags can't be shared between students. It uses a shared `FLAG_SECRET` and HMAC, so the two zones still never share a database or a network path. This answers the marker's note that the standard flag strings could be passed around.
+- A teacher/admin area (see the section above) so a marker can watch over every student's tokens and flags, adjust points and edit the challenge wording.
+- A seventh challenge, stored (persistent) XSS on target_app's `/noticeboard`: a note you post is saved and then rendered to everyone who views the board, so the payload runs for every visitor, not just you. It's the saved-to-the-page counterpart of the existing reflected XSS.

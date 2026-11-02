@@ -1,8 +1,8 @@
 """target_app: the deliberately vulnerable site (the vulnerable zone). It's a
 separate Flask app and database from breachbox_app. Vulnerabilities: SQLi
-(/login), XSS (/feedback), IDOR (/tickets/<id>), command injection
-(/diagnostics), path traversal (/reports) and a chained IDOR to staff
-console (/staff/console)."""
+(/login), reflected XSS (/feedback), stored XSS (/noticeboard), IDOR
+(/tickets/<id>), command injection (/diagnostics), path traversal (/reports)
+and a chained IDOR to staff console (/staff/console)."""
 
 import hashlib
 import hmac
@@ -34,6 +34,7 @@ db = SQLAlchemy(app)
 # own token.
 SQLI_FLAG = "__FLAG_SQLI__"
 XSS_FLAG = "__FLAG_XSS__"
+SXSS_FLAG = "__FLAG_SXSS__"
 IDOR_FLAG = "__FLAG_IDOR__"
 CMDI_FLAG = "__FLAG_CMDI__"
 PTRAVERSAL_FLAG = "__FLAG_PTRAVERSAL__"
@@ -47,6 +48,7 @@ FLAG_SECRET = os.environ.get("FLAG_SECRET", "breachbox-dev-flag-secret-change-me
 _FLAG_PLACEHOLDERS = {
     "__FLAG_SQLI__": "sqli",
     "__FLAG_XSS__": "xss",
+    "__FLAG_SXSS__": "sxss",
     "__FLAG_IDOR__": "idor",
     "__FLAG_CMDI__": "cmdi",
     "__FLAG_PTRAVERSAL__": "ptraversal",
@@ -86,6 +88,18 @@ class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     requester_name = db.Column(db.String(80), nullable=False)
     subject = db.Column(db.String(200), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+
+
+class Note(db.Model):
+    # Staff noticeboard posts. The board renders each note body with |safe, so
+    # a note containing a script payload is stored once and then runs in every
+    # visitor's browser: stored (persistent) XSS, the saved-to-the-page cousin
+    # of the reflected XSS on /feedback.
+    __tablename__ = "notes"
+
+    id = db.Column(db.Integer, primary_key=True)
+    author = db.Column(db.String(80), nullable=False)
     body = db.Column(db.Text, nullable=False)
 
 
@@ -146,6 +160,17 @@ def seed_reports():
         )
 
 
+def seed_noticeboard():
+    # One benign note so the board isn't empty. Notes are rendered unescaped,
+    # so a posted script payload sticks and runs for everyone who views it.
+    if Note.query.count() == 0:
+        db.session.add(Note(
+            author="itsupport",
+            body="Reminder: please clear your open tickets before Friday.",
+        ))
+        db.session.commit()
+
+
 def seed_staff_console_ticket():
     # Puts the staff-console token in a ticket that isn't the viewer's own,
     # so it's reachable through the ticket IDOR (step one of the chain).
@@ -203,9 +228,29 @@ def feedback():
 
 def _looks_like_working_xss_payload(message: str) -> bool:
     # Stands in for real browser execution; the actual bug is the |safe filter
-    # in feedback.html.
+    # in feedback.html and noticeboard.html.
     lowered = message.lower()
     return "<script" in lowered or "onerror=" in lowered or "onload=" in lowered
+
+
+@app.route("/noticeboard", methods=["GET"])
+def noticeboard():
+    notes = Note.query.order_by(Note.id.asc()).all()
+    # vulnerable: note bodies are rendered with |safe on the board, so a stored
+    # payload runs for everyone who views it, not just the person who posted it.
+    attack_present = any(_looks_like_working_xss_payload(n.body) for n in notes)
+    flag = SXSS_FLAG if attack_present else None
+    return render_template("noticeboard.html", notes=notes, flag=flag)
+
+
+@app.route("/noticeboard", methods=["POST"])
+def noticeboard_post():
+    author = request.form.get("author", "").strip() or "anonymous"
+    body = request.form.get("body", "").strip()
+    if body:
+        db.session.add(Note(author=author, body=body))
+        db.session.commit()
+    return redirect(url_for("noticeboard"))
 
 
 @app.route("/tickets/new", methods=["GET"])
@@ -337,6 +382,7 @@ with app.app_context():
     seed_staff_console_ticket()
     seed_ops_notes_file()
     seed_reports()
+    seed_noticeboard()
 
 
 if __name__ == "__main__":

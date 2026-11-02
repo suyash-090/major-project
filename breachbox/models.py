@@ -20,6 +20,7 @@ class Student(UserMixin, db.Model):
     class_group = db.Column(db.String(40), nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     flag_token = db.Column(db.String(32), unique=True, nullable=False, default=_new_flag_token)
+    is_admin = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     submissions = db.relationship("Submission", backref="student", lazy=True)
@@ -116,3 +117,17 @@ class HintUnlock(db.Model):
     hint_id = db.Column(db.Integer, db.ForeignKey("hint.hint_id"),
                          nullable=False)
     unlocked_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class ScoreAdjustment(db.Model):
+    """A manual points change made by a teacher/admin. delta is negative to
+    dock points. Kept as a record so the scoreboard stays auditable."""
+    __tablename__ = "score_adjustment"
+
+    adjustment_id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey("student.student_id"),
+                            nullable=False)
+    delta = db.Column(db.Integer, nullable=False)
+    reason = db.Column(db.String(200))
+    created_by = db.Column(db.String(80))  # admin display name, for the record
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
