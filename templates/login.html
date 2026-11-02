@@ -1,11 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Log in, BreachBox{% endblock %}
 {% block content %}
-<h1>Log in</h1>
-<form method="POST">
-    <label>Display name<input type="text" name="display_name" required></label>
-    <label>Password<input type="password" name="password" required></label>
-    <button type="submit">Log in</button>
-</form>
-<p>Need an account? <a href="{{ url_for('auth.register') }}">Register</a></p>
+<div class="auth-card">
+    <p class="eyebrow">// protected zone</p>
+    <h1>Log in</h1>
+    <form method="POST">
+        <label>Display name<input type="text" name="display_name" autocomplete="username" required></label>
+        <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+        <button type="submit">Log in</button>
+    </form>
+    <p class="auth-alt">Need an account? <a href="{{ url_for('auth.register') }}">Register</a></p>
+</div>
 {% endblock %}

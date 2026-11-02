@@ -12,8 +12,8 @@
     </thead>
     <tbody id="scoreboardBody">
         {% for row in scoreboard %}
-        <tr>
-            <td>{{ loop.index }}</td>
+        <tr class="{{ 'rank-' ~ loop.index if loop.index <= 3 else '' }}">
+            <td class="rank">{% if loop.index == 1 %}<span class="medal">&#129351;</span>{% elif loop.index == 2 %}<span class="medal">&#129352;</span>{% elif loop.index == 3 %}<span class="medal">&#129353;</span>{% endif %}{{ loop.index }}</td>
             <td>{{ row.display_name }}</td>
             <td>{{ row.class_group }}</td>
             <td>{{ row.total_score }}</td>
@@ -49,11 +49,14 @@ function renderScoreboardTable(rows) {
         return;
     }
 
+    var medals = ["&#129351;", "&#129352;", "&#129353;"];
     tbody.innerHTML = rows.map(function (row, index) {
-        return '<tr>' +
-            '<td>' + (index + 1) + '</td>' +
+        var rankClass = index < 3 ? "rank-" + (index + 1) : "";
+        var medal = index < 3 ? '<span class="medal">' + medals[index] + '</span>' : "";
+        return '<tr class="' + rankClass + '">' +
+            '<td class="rank">' + medal + (index + 1) + '</td>' +
             '<td>' + escapeHtml(row.display_name) + '</td>' +
-            '<td>' + escapeHtml(row.class_group || "—") + '</td>' +
+            '<td>' + escapeHtml(row.class_group || "-") + '</td>' +
             '<td>' + escapeHtml(row.total_score) + '</td>' +
             '</tr>';
     }).join("");

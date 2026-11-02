@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}BreachBox{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -10,17 +11,25 @@
 </head>
 <body>
     <nav class="navbar">
-        <span class="brand">breachbox@protected-zone:~$</span>
-        <a href="{{ url_for('index') }}">Home</a>
-        <a href="{{ url_for('learn') }}">Learn</a>
+        <span class="brand">
+            <svg class="logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="3"/>
+                <path d="M13 7l-4 10"/>
+                <path d="M8 10l-2 2 2 2"/>
+                <path d="M16 10l2 2-2 2"/>
+            </svg>
+            <span class="prompt">breachbox@protected-zone:~$</span>
+        </span>
+        <a href="{{ url_for('index') }}" class="{{ 'active' if request.path == '/' }}">Home</a>
+        <a href="{{ url_for('learn') }}" class="{{ 'active' if request.path == '/learn' }}">Learn</a>
         {% if current_user.is_authenticated %}
-            <span>Logged in: {{ current_user.display_name }}</span>
-            <a href="{{ url_for('dashboard.home') }}">Dashboard</a>
-            <a href="{{ url_for('scoreboard.view') }}">Scoreboard</a>
+            <a href="{{ url_for('dashboard.home') }}" class="{{ 'active' if request.path.startswith('/dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('scoreboard.view') }}" class="{{ 'active' if request.path.startswith('/scoreboard') }}">Scoreboard</a>
+            <span>{{ current_user.display_name }}</span>
             <a href="{{ url_for('auth.logout') }}">Log out</a>
         {% else %}
-            <a href="{{ url_for('auth.login') }}">Log in</a>
-            <a href="{{ url_for('auth.register') }}">Register</a>
+            <a href="{{ url_for('auth.login') }}" class="{{ 'active' if request.path == '/auth/login' }}">Log in</a>
+            <a href="{{ url_for('auth.register') }}" class="{{ 'active' if request.path == '/auth/register' }}">Register</a>
         {% endif %}
     </nav>
 
@@ -37,5 +46,15 @@
     <main>
         {% block content %}{% endblock %}
     </main>
+
+    <footer class="site-footer">
+        <div class="inner">
+            <span class="zone-legend">
+                <span class="dot protected">protected zone &middot; breachbox :5000</span>
+                <span class="dot vulnerable">vulnerable zone &middot; target :5001</span>
+            </span>
+            <span class="note">Use these techniques only on BreachBox or systems you own.</span>
+        </div>
+    </footer>
 </body>
 </html>

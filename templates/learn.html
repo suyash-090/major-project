@@ -25,7 +25,11 @@
 {% set c = item.challenge %}
 <section class="challenge-card">
     <h3>{{ c.name }}</h3>
-    <p class="challenge-meta">{{ c.category }} &middot; {{ c.difficulty }} &middot; {{ c.points }} pts</p>
+    <p class="challenge-meta">
+        <span class="badge badge-cat">{{ c.category }}</span>
+        <span class="badge">{{ c.difficulty }}</span>
+        <span class="badge badge-points">{{ c.points }} pts</span>
+    </p>
     {% if item.education %}
     {% set e = item.education %}
     <p><strong>What you'll learn.</strong> {{ e.learn }}</p>

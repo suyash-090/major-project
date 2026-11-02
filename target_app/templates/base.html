@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Target App{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -9,17 +10,27 @@
 </head>
 <body>
     <nav class="navbar">
-        <span class="brand">guest@target-app:vulnerable-zone:~$</span>
-        <a href="/login">Staff Login</a>
-        <a href="/feedback">Feedback</a>
-        <a href="/tickets/new">Submit Ticket</a>
-        <a href="/diagnostics">Diagnostics</a>
-        <a href="/reports">Reports</a>
-        <a href="/staff/console">Staff Console</a>
+        <span class="brand">
+            <svg class="logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 2l8 4v5c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V6z"/>
+                <path d="M12 8v4"/>
+                <path d="M12 15.5v.5"/>
+            </svg>
+            <span class="prompt">guest@target-app:vulnerable-zone:~$</span>
+        </span>
+        <a href="/login" class="{{ 'active' if request.path == '/login' }}">Staff Login</a>
+        <a href="/feedback" class="{{ 'active' if request.path == '/feedback' }}">Feedback</a>
+        <a href="/tickets/new" class="{{ 'active' if request.path.startswith('/tickets') }}">Submit Ticket</a>
+        <a href="/diagnostics" class="{{ 'active' if request.path == '/diagnostics' }}">Diagnostics</a>
+        <a href="/reports" class="{{ 'active' if request.path == '/reports' }}">Reports</a>
+        <a href="/staff/console" class="{{ 'active' if request.path.startswith('/staff') }}">Staff Console</a>
     </nav>
     <main>
-        <p class="warning">This is a deliberately vulnerable practice app. Everything here is fake staff data, with no connection to breachbox_app's real student database.</p>
+        <p class="warning">&#9888; This is a deliberately vulnerable practice app. Everything here is fake staff data, with no connection to breachbox_app's real student database.</p>
         {% block content %}{% endblock %}
     </main>
+    <footer class="site-footer">
+        vulnerable zone &middot; target_app :5001 &middot; isolated from the protected zone by design
+    </footer>
 </body>
 </html>
