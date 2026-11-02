@@ -4,6 +4,12 @@
 <h1>Dashboard</h1>
 <p>Logged in as {{ student.display_name }} ({{ student.class_group }})</p>
 
+<div class="token-box">
+    <span class="token-label">Your personal attack token</span>
+    <code class="token">{{ student.flag_token }}</code>
+    <p class="token-help">Paste this into the target app (port 5001) using the "BreachBox token" box at the top, before you start. Your flags are built from this token, so they are yours alone &mdash; another student's flag will never work for you. You have to do each hack yourself.</p>
+</div>
+
 <div class="category-filters">
     <a href="{{ url_for('dashboard.home') }}" class="{{ 'active' if not active_category else '' }}">All</a>
     {% for cat in categories %}

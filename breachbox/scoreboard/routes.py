@@ -9,7 +9,7 @@ from sqlalchemy import func
 
 from breachbox.scoreboard import scoreboard_bp
 from breachbox.extensions import db
-from breachbox.models import Student, Challenge, Submission, Hint, HintUnlock
+from breachbox.models import Student, Challenge, Submission, Hint, HintUnlock, ScoreAdjustment
 
 
 def calculate_scoreboard():
@@ -46,6 +46,16 @@ def calculate_scoreboard():
         .subquery()
     )
 
+    # Manual teacher adjustments, positive to award or negative to dock points.
+    adjustments = (
+        db.session.query(
+            ScoreAdjustment.student_id,
+            func.sum(ScoreAdjustment.delta).label("points_adjusted"),
+        )
+        .group_by(ScoreAdjustment.student_id)
+        .subquery()
+    )
+
     rows = (
         db.session.query(
             Student.student_id,
@@ -53,9 +63,12 @@ def calculate_scoreboard():
             Student.class_group,
             func.coalesce(points_per_student.c.points_from_challenges, 0).label("points_from_challenges"),
             func.coalesce(hint_costs.c.points_lost_to_hints, 0).label("points_lost_to_hints"),
+            func.coalesce(adjustments.c.points_adjusted, 0).label("points_adjusted"),
         )
         .outerjoin(points_per_student, points_per_student.c.student_id == Student.student_id)
         .outerjoin(hint_costs, hint_costs.c.student_id == Student.student_id)
+        .outerjoin(adjustments, adjustments.c.student_id == Student.student_id)
+        .filter(Student.is_admin.is_(False))  # teachers don't appear on the student board
         .all()
     )
 
@@ -66,7 +79,8 @@ def calculate_scoreboard():
             "class_group": r.class_group,
             "points_from_challenges": r.points_from_challenges,
             "points_lost_to_hints": r.points_lost_to_hints,
-            "total_score": r.points_from_challenges - r.points_lost_to_hints,
+            "points_adjusted": r.points_adjusted,
+            "total_score": r.points_from_challenges - r.points_lost_to_hints + r.points_adjusted,
         }
         for r in rows
     ]

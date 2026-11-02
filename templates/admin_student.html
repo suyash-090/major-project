@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ student.display_name }}, Admin{% endblock %}
+{% block content %}
+<p><a href="{{ url_for('admin.home') }}">&larr; All students</a></p>
+<h1>{{ student.display_name }}</h1>
+<p>Class {{ student.class_group }} &middot; current score <strong>{{ score }}</strong></p>
+
+<div class="token-box">
+    <span class="token-label">Personal attack token</span>
+    <code class="token">{{ student.flag_token }}</code>
+</div>
+
+<h2>Their flags</h2>
+<table>
+    <thead><tr><th>Challenge</th><th>Flag</th><th>Solved</th></tr></thead>
+    <tbody>
+        {% for f in flags %}
+        <tr>
+            <td>{{ f.challenge.name }}</td>
+            <td><code class="admin-token">{{ f.flag }}</code></td>
+            <td>{{ 'yes' if f.solved else 'no' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Adjust points</h2>
+<form class="admin-edit" method="POST" action="{{ url_for('admin.adjust_points') }}">
+    <input type="hidden" name="student_id" value="{{ student.student_id }}">
+    <label>Points change (use a minus sign to dock points)
+        <input type="number" name="delta" placeholder="-50" required>
+    </label>
+    <label>Reason
+        <input type="text" name="reason" placeholder="e.g. shared a flag with a classmate">
+    </label>
+    <button type="submit">Apply adjustment</button>
+</form>
+
+{% if adjustments %}
+<h2>Past adjustments</h2>
+<table>
+    <thead><tr><th>When</th><th>Change</th><th>Reason</th><th>By</th></tr></thead>
+    <tbody>
+        {% for a in adjustments %}
+        <tr>
+            <td>{{ a.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+            <td>{{ "%+d"|format(a.delta) }}</td>
+            <td>{{ a.reason or '' }}</td>
+            <td>{{ a.created_by or '' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<h2>Write-ups</h2>
+{% for w in writeups %}
+<section>
+    <h3>{{ w.challenge.name }}</h3>
+    <p>{{ w.writeup_text }}</p>
+</section>
+{% else %}
+<p>No solved challenges yet.</p>
+{% endfor %}
+{% endblock %}

@@ -62,7 +62,7 @@ def submit():
             "recorded": False,
         }), 429
 
-    is_correct = challenge_class().check_solution(submitted_flag)
+    is_correct = challenge_class().check_solution(submitted_flag, current_user.flag_token)
     if is_correct:
         flag_limiter.reset(rl_key)
     else:

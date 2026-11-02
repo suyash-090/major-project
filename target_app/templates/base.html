@@ -20,6 +20,7 @@
         </span>
         <a href="/login" class="{{ 'active' if request.path == '/login' }}">Staff Login</a>
         <a href="/feedback" class="{{ 'active' if request.path == '/feedback' }}">Feedback</a>
+        <a href="/noticeboard" class="{{ 'active' if request.path == '/noticeboard' }}">Noticeboard</a>
         <a href="/tickets/new" class="{{ 'active' if request.path.startswith('/tickets') }}">Submit Ticket</a>
         <a href="/diagnostics" class="{{ 'active' if request.path == '/diagnostics' }}">Diagnostics</a>
         <a href="/reports" class="{{ 'active' if request.path == '/reports' }}">Reports</a>
@@ -27,6 +28,12 @@
     </nav>
     <main>
         <p class="warning">&#9888; This is a deliberately vulnerable practice app. Everything here is fake staff data, with no connection to breachbox_app's real student database.</p>
+        <form class="token-bar" method="POST" action="/set-token">
+            <label for="bb-token">BreachBox token</label>
+            <input id="bb-token" type="text" name="token" placeholder="paste your token from the dashboard" value="{{ request.cookies.get('bb_token', '') }}">
+            <button type="submit">Set</button>
+            {% if request.cookies.get('bb_token') %}<span class="token-ok">set &#10003;</span>{% endif %}
+        </form>
         {% block content %}{% endblock %}
     </main>
     <footer class="site-footer">
