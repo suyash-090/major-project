@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Link Checker{% endblock %}
+{% block content %}
+<h1>Link Checker</h1>
+<p>Staff tool: enter a URL and the server fetches it and shows what it got back.</p>
+
+<form method="GET" action="/linkcheck">
+    <label>URL to check<input type="text" name="url" size="50" placeholder="https://example.com" value="{{ url }}"></label>
+    <button type="submit">Check</button>
+</form>
+
+{% if error %}
+<p class="error">{{ error }}</p>
+{% endif %}
+
+{% if result %}
+<h2>Response</h2>
+<div id="feedback-display">{{ result }}</div>
+{% endif %}
+{% endblock %}

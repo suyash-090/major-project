@@ -25,6 +25,8 @@
         <a href="/diagnostics" class="{{ 'active' if request.path == '/diagnostics' }}">Diagnostics</a>
         <a href="/reports" class="{{ 'active' if request.path == '/reports' }}">Reports</a>
         <a href="/staff/console" class="{{ 'active' if request.path.startswith('/staff') }}">Staff Console</a>
+        <a href="/manager" class="{{ 'active' if request.path == '/manager' }}">Manager</a>
+        <a href="/linkcheck" class="{{ 'active' if request.path == '/linkcheck' }}">Link Check</a>
     </nav>
     <main>
         <p class="warning">&#9888; This is a deliberately vulnerable practice app. Everything here is fake staff data, with no connection to breachbox_app's real student database.</p>
