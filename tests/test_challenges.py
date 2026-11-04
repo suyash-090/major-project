@@ -22,6 +22,9 @@ CHALLENGE_NAMES = [
     "Diagnostics Command Injection",
     "Report Viewer Path Traversal",
     "Chained: Ticket Leak to Staff Console",
+    "Manager Console Privilege Escalation",
+    "Link Checker SSRF",
+    "Exposed Staff Notes",
 ]
 
 # A stand-in for one student's personal token.
@@ -32,7 +35,7 @@ def _by_name():
     return {cls.name: cls for cls in discover_challenges()}
 
 
-def test_discovers_exactly_the_seven_live_challenges():
+def test_discovers_exactly_the_ten_live_challenges():
     assert set(_by_name()) == set(CHALLENGE_NAMES)
 
 
