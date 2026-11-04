@@ -30,6 +30,9 @@ CHALLENGE_KEYS = {
     "Diagnostics Command Injection": "cmdi",
     "Report Viewer Path Traversal": "ptraversal",
     "Chained: Ticket Leak to Staff Console": "chained",
+    "Manager Console Privilege Escalation": "privesc",
+    "Link Checker SSRF": "ssrf",
+    "Exposed Staff Notes": "exposure",
 }
 
 

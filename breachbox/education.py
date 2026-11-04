@@ -54,6 +54,27 @@ EDUCATION = {
         "matters": "It shows that a 'low' issue (reading a ticket) plus a weak secret (a shared token) can add up to a full staff takeover. You have to think about how problems combine, not just one at a time.",
         "prevent": "Fix every link: proper access checks on tickets, and never guard a sensitive page with a shared, leakable token, use real per-user authentication and sessions.",
     },
+    "Manager Console Privilege Escalation": {
+        "owasp": "A01:2021 - Broken Access Control",
+        "owasp_url": "https://owasp.org/Top10/2021/A01_2021-Broken_Access_Control/",
+        "learn": "How privilege escalation through a trusted client value works: when a site decides what you can do from a cookie or hidden field your browser sends, you can just change it to give yourself more access.",
+        "matters": "If the server believes the client when it says 'I'm an admin', any user can promote themselves to admin. It is one of the most common access-control mistakes.",
+        "prevent": "Decide roles on the server from the logged-in account, never from a cookie or form field the user controls. Check permissions server-side on every request.",
+    },
+    "Link Checker SSRF": {
+        "owasp": "A10:2021 - Server-Side Request Forgery (SSRF)",
+        "owasp_url": "https://owasp.org/Top10/2021/A10_2021-Server-Side_Request_Forgery_(SSRF)/",
+        "learn": "How SSRF works: when a tool makes the server fetch any address you type, you can aim it at internal places your own browser could never reach.",
+        "matters": "SSRF lets an attacker use the server as a jump box to reach internal services, cloud metadata and admin panels behind the firewall. It is a major cloud-era risk.",
+        "prevent": "Don't let users choose what the server connects to. Allow-list the exact hosts you expect, block internal and loopback addresses, and don't hand the fetched response back to the user.",
+    },
+    "Exposed Staff Notes": {
+        "owasp": "A05:2021 - Security Misconfiguration",
+        "owasp_url": "https://owasp.org/Top10/2021/A05_2021-Security_Misconfiguration/",
+        "learn": "How sensitive data exposure works: secrets left in files anyone can open, like backups, notes or paths listed in robots.txt, can simply be read, no real hacking needed.",
+        "matters": "Exposed config files, backups and 'hidden' pages leak passwords, keys and private data. robots.txt even advertises the paths you meant to keep secret.",
+        "prevent": "Don't leave secret files in the web root. Never rely on robots.txt or a hard-to-guess URL to hide something; put real authentication on it or keep it off the server entirely.",
+    },
 }
 
 
