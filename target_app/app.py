@@ -1,14 +1,18 @@
 """target_app: the deliberately vulnerable site (the vulnerable zone). It's a
 separate Flask app and database from breachbox_app. Vulnerabilities: SQLi
 (/login), reflected XSS (/feedback), stored XSS (/noticeboard), IDOR
-(/tickets/<id>), command injection (/diagnostics), path traversal (/reports)
-and a chained IDOR to staff console (/staff/console)."""
+(/tickets/<id>), command injection (/diagnostics), path traversal (/reports),
+a chained IDOR to staff console (/staff/console), privilege escalation via a
+trusted cookie (/manager), SSRF (/linkcheck) and sensitive data exposure
+(/robots.txt)."""
 
 import hashlib
 import hmac
 import os
 import subprocess
-from flask import Flask, render_template, request, redirect, url_for
+import urllib.error
+import urllib.request
+from flask import Flask, Response, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 
@@ -39,6 +43,9 @@ IDOR_FLAG = "__FLAG_IDOR__"
 CMDI_FLAG = "__FLAG_CMDI__"
 PTRAVERSAL_FLAG = "__FLAG_PTRAVERSAL__"
 CHAINED_FLAG = "__FLAG_CHAINED__"
+PRIVESC_FLAG = "__FLAG_PRIVESC__"
+SSRF_FLAG = "__FLAG_SSRF__"
+EXPOSURE_FLAG = "__FLAG_EXPOSURE__"
 
 # Shared with breachbox_app through config only (no network link, no shared
 # database), so both sides derive the same per-student flags. Same default as
@@ -53,6 +60,9 @@ _FLAG_PLACEHOLDERS = {
     "__FLAG_CMDI__": "cmdi",
     "__FLAG_PTRAVERSAL__": "ptraversal",
     "__FLAG_CHAINED__": "chained",
+    "__FLAG_PRIVESC__": "privesc",
+    "__FLAG_SSRF__": "ssrf",
+    "__FLAG_EXPOSURE__": "exposure",
 }
 
 
@@ -339,6 +349,80 @@ def staff_console():
     if token != STAFF_CONSOLE_TOKEN:
         return render_template("staff_console.html", authorised=False, flag=None), 403
     return render_template("staff_console.html", authorised=True, flag=CHAINED_FLAG)
+
+
+@app.route("/manager", methods=["GET"])
+def manager():
+    # vulnerable: whether you're an admin is read straight from a "role"
+    # cookie the browser controls, not from your account. Anyone can set
+    # role=admin and be treated as a manager.
+    role = request.cookies.get("role", "staff")
+    is_admin = role == "admin"
+    flag = PRIVESC_FLAG if is_admin else None
+    return render_template("manager.html", role=role, is_admin=is_admin, flag=flag)
+
+
+@app.route("/linkcheck", methods=["GET"])
+def linkcheck():
+    url = request.args.get("url", "").strip()
+    result = None
+    error = None
+    if url:
+        # vulnerable: the server fetches whatever URL you give it, with no
+        # allow-list and no block on internal addresses, so you can make it
+        # reach pages your own browser can't (SSRF).
+        try:
+            req = urllib.request.Request(
+                url, headers={"User-Agent": "BreachBox-LinkChecker"}
+            )
+            # Forward the student's token so an internal page builds the flag
+            # for the right student.
+            token = request.cookies.get("bb_token")
+            if token:
+                req.add_header("Cookie", f"bb_token={token}")
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                body = resp.read(4096).decode("utf-8", "replace")
+                result = f"HTTP {resp.status}\n\n{body}"
+        except urllib.error.HTTPError as exc:
+            result = f"HTTP {exc.code}\n\n{exc.read(4096).decode('utf-8', 'replace')}"
+        except Exception as exc:
+            error = f"Could not fetch that URL: {exc}"
+    return render_template("linkcheck.html", url=url, result=result, error=error)
+
+
+@app.route("/internal/ops", methods=["GET"])
+def internal_ops():
+    # "Internal" service: it only answers the server itself (loopback), so a
+    # browser can't reach it directly. The link checker above can, which is
+    # the whole point of the SSRF. (Run via Docker so the browser isn't on
+    # loopback; see the challenge notes.)
+    if request.remote_addr not in ("127.0.0.1", "::1"):
+        return "Forbidden: internal service, not reachable from outside.", 403
+    return Response(
+        "Internal ops endpoint (staff infrastructure).\n"
+        f"Flag: {SSRF_FLAG}\n",
+        mimetype="text/plain",
+    )
+
+
+@app.route("/robots.txt", methods=["GET"])
+def robots():
+    # vulnerable: robots.txt "hides" a path by naming it, which just points an
+    # attacker straight at the secret file. robots.txt is not security.
+    body = "User-agent: *\nDisallow: /staff-notes.txt\n"
+    return Response(body, mimetype="text/plain")
+
+
+@app.route("/staff-notes.txt", methods=["GET"])
+def staff_notes():
+    # vulnerable: a secret notes file left in the open with no login, found
+    # straight from robots.txt.
+    body = (
+        "Staff notes (internal). Do not share.\n"
+        "- Back office door code is 4417.\n"
+        f"- BreachBox flag: {EXPOSURE_FLAG}\n"
+    )
+    return Response(body, mimetype="text/plain")
 
 
 @app.route("/set-token", methods=["POST"])

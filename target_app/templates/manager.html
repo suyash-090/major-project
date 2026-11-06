@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Manager Console{% endblock %}
+{% block content %}
+<h1>Manager Console</h1>
+
+{% if is_admin %}
+<p class="flag-banner"><strong>Flag:</strong> {{ flag }} (submit this flag at breachbox_app's /api/submit)</p>
+<section>
+    <h2>Admin tools</h2>
+    <p>Welcome, manager. These controls are for admins only.</p>
+</section>
+{% else %}
+<p>Sorry, this console is for <strong>managers (admins)</strong> only.</p>
+<p>You are signed in with role: <code>{{ role }}</code>.</p>
+{% endif %}
+{% endblock %}

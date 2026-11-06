@@ -142,6 +142,22 @@ def _seed_hints_if_needed():
             (2, "Read ticket number 2 through the ticket IDOR, take the token "
                 "from its body, then pass it to /staff/console as ?token=...", 60),
         ],
+        "Manager Console Privilege Escalation": [
+            (1, "The manager console decides if you're an admin from something "
+                "your own browser sends to it. Look at your cookies.", 20),
+            (2, "Open your browser devtools, add a cookie named role with the "
+                "value admin, then reload /manager.", 40),
+        ],
+        "Link Checker SSRF": [
+            (1, "The link checker makes the SERVER fetch the URL, not your "
+                "browser. What could the server reach that you can't?", 40),
+            (2, "There's an internal-only page at /internal/ops. Put "
+                "http://127.0.0.1:5001/internal/ops into the link checker.", 80),
+        ],
+        "Exposed Staff Notes": [
+            (1, "Lots of sites have a /robots.txt that lists paths to skip. "
+                "What does this site list there?", 15),
+        ],
     }
 
     for challenge_name, hints in hint_ladder.items():
