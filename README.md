@@ -2,6 +2,8 @@
 
 Our Major IT Project, built by Sameer, Harry and Suyash.
 
+> **Using or assessing this project? Start with the [User Guide](USER_GUIDE.md).**
+
 BreachBox is a capture the flag app for learning web security. You break into a deliberately vulnerable website, find a flag, and submit that flag on a separate scoring site to earn points. It's built as two apps that can't talk to each other, and that split is the whole idea behind it.
 
 ## Running the protected app (breachbox_app)
